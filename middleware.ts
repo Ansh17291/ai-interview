@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/firebase/admin";
 
+// Use Node.js runtime instead of Edge Runtime to support Firebase Admin SDK
+export const runtime = "nodejs";
+
 // Routes that don't require authentication
 const PUBLIC_ROUTES = ["/sign-in", "/sign-up"];
 
