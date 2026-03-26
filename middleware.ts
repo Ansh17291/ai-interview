@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// Use Node.js runtime instead of Edge Runtime to support Firebase Admin SDK
-export const runtime = "nodejs";
-
 // Routes that don't require authentication
 const PUBLIC_ROUTES = ["/", "/sign-in", "/sign-up"];
 
@@ -19,7 +16,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Get session cookie
-  const sessionCookie = request.cookies.get("session")?.value;
+  const sessionCookie = request.cookies.get("__session")?.value;
 
   // Skip verification in middleware if runtime environment doesn't support Firebase Admin SDK
   // Firebase Admin SDK is not compatible with Edge Runtime (which Next.js Middleware uses on Vercel)

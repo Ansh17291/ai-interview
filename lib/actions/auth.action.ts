@@ -17,10 +17,11 @@ export async function setSessionCookie(idToken: string) {
   });
 
   // Set cookie in the browser
-  cookieStore.set("session", sessionCookie, {
+  cookieStore.set("__session", sessionCookie, {
     maxAge: SESSION_DURATION,
+    expires: new Date(Date.now() + SESSION_DURATION * 1000),
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: true, // Force true for production/Vercel
     path: "/",
     sameSite: "lax",
   });
@@ -107,7 +108,7 @@ export async function signIn(params: SignInParams) {
 export async function signOut() {
   const cookieStore = await cookies();
 
-  cookieStore.delete("session");
+  cookieStore.delete("__session");
   revalidatePath("/");
 }
 
@@ -115,7 +116,7 @@ export async function signOut() {
 export async function getCurrentUser(): Promise<User | null> {
   const cookieStore = await cookies();
 
-  const sessionCookie = cookieStore.get("session")?.value;
+  const sessionCookie = cookieStore.get("__session")?.value;
   if (!sessionCookie) return null;
 
   try {
