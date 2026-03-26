@@ -2,6 +2,7 @@
 
 import { auth, db } from "@/firebase/admin";
 import { cookies } from "next/headers";
+import { revalidatePath } from "next/cache";
 
 // Session duration (1 week)
 const SESSION_DURATION = 60 * 60 * 24 * 7;
@@ -19,9 +20,9 @@ export async function setSessionCookie(idToken: string) {
   cookieStore.set("session", sessionCookie, {
     maxAge: SESSION_DURATION,
     httpOnly: true,
-    secure: true, // Always use secure on Vercel/production
+    secure: process.env.NODE_ENV === "production",
     path: "/",
-    sameSite: "strict",
+    sameSite: "lax",
   });
 }
 
@@ -90,6 +91,7 @@ export async function signIn(params: SignInParams) {
       };
 
     await setSessionCookie(idToken);
+    revalidatePath("/");
   } catch (error: unknown) {
     // Changed 'any' to 'unknown'
     console.log(error); // Logging the error for debugging
@@ -106,6 +108,7 @@ export async function signOut() {
   const cookieStore = await cookies();
 
   cookieStore.delete("session");
+  revalidatePath("/");
 }
 
 // Get current user from session cookie
@@ -116,7 +119,7 @@ export async function getCurrentUser(): Promise<User | null> {
   if (!sessionCookie) return null;
 
   try {
-    const decodedClaims = await auth.verifySessionCookie(sessionCookie, true);
+    const decodedClaims = await auth.verifySessionCookie(sessionCookie, false);
 
     // get user info from db
     const userRecord = await db
