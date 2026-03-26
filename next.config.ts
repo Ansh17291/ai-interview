@@ -26,6 +26,9 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  experimental: {
+    esmExternals: true,
+  },
 };
 
 export default nextConfig;
