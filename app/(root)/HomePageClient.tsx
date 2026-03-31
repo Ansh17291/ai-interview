@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 
 import Chatbot from "@/components/Chatbot";
-import InterviewCard from "@/components/InterviewCard";
+import { User, Interview, Feedback } from "@/types";
 
 import { dummyInterviews } from "@/constants";
 import { signOut } from "@/lib/actions/auth.action";
@@ -72,57 +72,57 @@ export default function HomePageClient({
       {stats && (
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
           <div className="group bg-zinc-900/50 border border-white/5 rounded-[1.5rem] md:rounded-[2rem] p-6 md:p-8 hover:border-primary-100/30 transition-all duration-500 hover:-translate-y-1 relative overflow-hidden">
-             <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                <Zap className="w-16 h-16 md:w-20 md:h-20" />
-             </div>
+            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+              <Zap className="w-16 h-16 md:w-20 md:h-20" />
+            </div>
             <p className="text-zinc-500 text-[10px] md:text-xs font-bold uppercase tracking-widest mb-4">Total Interviews</p>
             <p className="text-4xl md:text-5xl font-black text-white">{stats.totalInterviews}</p>
             <div className="mt-6 flex items-center gap-2 text-primary-100 text-xs md:text-sm font-bold bg-primary-100/10 w-fit px-3 py-1 rounded-full">
-               <TrendingUp className="w-4 h-4" /> Lifetime
+              <TrendingUp className="w-4 h-4" /> Lifetime
             </div>
           </div>
 
           <div className="group bg-zinc-900 border border-white/5 rounded-[2rem] p-8 hover:border-emerald-500/30 transition-all duration-500 hover:-translate-y-1 relative overflow-hidden">
-             <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                <CheckCircle2 className="w-20 h-20" />
-             </div>
+            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+              <CheckCircle2 className="w-20 h-20" />
+            </div>
             <p className="text-zinc-500 text-xs font-black uppercase tracking-widest mb-4">Completed</p>
             <p className="text-5xl font-black text-white">{stats.completedInterviews}</p>
             <div className="mt-6 flex items-center gap-2 text-emerald-400 text-sm font-bold bg-emerald-500/10 w-fit px-3 py-1 rounded-full">
-               <CheckCircle2 className="w-4 h-4" /> Finalized
+              <CheckCircle2 className="w-4 h-4" /> Finalized
             </div>
           </div>
 
           <div className="group bg-zinc-900 border border-white/5 rounded-[2rem] p-8 hover:border-blue-500/30 transition-all duration-500 hover:-translate-y-1 relative overflow-hidden">
-             <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                <BookOpen className="w-20 h-20" />
-             </div>
+            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+              <BookOpen className="w-20 h-20" />
+            </div>
             <p className="text-zinc-500 text-xs font-black uppercase tracking-widest mb-4">Quizzes Taken</p>
             <p className="text-5xl font-black text-white">{stats.totalQuizzes}</p>
             <div className="mt-6 flex items-center gap-2 text-blue-400 text-sm font-bold bg-blue-500/10 w-fit px-3 py-1 rounded-full">
-               <BookOpen className="w-4 h-4" /> Mastery
+              <BookOpen className="w-4 h-4" /> Mastery
             </div>
           </div>
 
           <div className="group bg-zinc-900/50 border border-white/5 rounded-[1.5rem] md:rounded-[2rem] p-6 md:p-8 hover:border-purple-500/30 transition-all duration-500 hover:-translate-y-1 relative overflow-hidden">
-             <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                <Award className="w-16 h-16 md:w-20 md:h-20" />
-             </div>
+            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+              <Award className="w-16 h-16 md:w-20 md:h-20" />
+            </div>
             <p className="text-zinc-500 text-[10px] md:text-xs font-bold uppercase tracking-widest mb-4">Avg Score</p>
             <p className="text-4xl md:text-5xl font-black text-white">{stats.averageScore}%</p>
             <div className="mt-6 flex items-center gap-2 text-purple-400 text-sm font-bold bg-purple-500/10 w-fit px-3 py-1 rounded-full">
-               <Award className="w-4 h-4" /> Global Rank
+              <Award className="w-4 h-4" /> Global Rank
             </div>
           </div>
 
           <div className="group bg-gradient-to-br from-orange-500/10 to-transparent border border-orange-500/20 rounded-[1.5rem] md:rounded-[2rem] p-6 md:p-8 hover:border-orange-500/40 transition-all duration-500 hover:-translate-y-1 relative overflow-hidden">
-             <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                <Zap className="w-16 h-16 md:w-20 md:h-20 text-orange-500" />
-             </div>
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+              <Zap className="w-16 h-16 md:w-20 md:h-20 text-orange-500" />
+            </div>
             <p className="text-orange-500/70 text-[10px] md:text-xs font-black uppercase tracking-widest mb-4">Practice Streak</p>
-            <p className="text-4xl md:text-5xl font-black text-white flex items-baseline gap-2">4 <span className="text-lg text-zinc-600">DAYS</span></p>
+            <p className="text-4xl md:text-5xl font-black text-white flex items-baseline gap-2">0 <span className="text-lg text-zinc-600">DAYS</span></p>
             <div className="mt-6 flex items-center gap-2 text-orange-500 text-sm font-bold bg-orange-500/20 w-fit px-3 py-1 rounded-full animate-pulse">
-               <Zap className="w-4 h-4 fill-current" /> YOU&apos;RE ON FIRE!
+              <Zap className="w-4 h-4 fill-current" /> YOU&apos;RE ON FIRE!
             </div>
           </div>
         </div>
@@ -134,7 +134,7 @@ export default function HomePageClient({
         <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
           <div className="space-y-4 text-center md:text-left">
             <h2 className="text-3xl md:text-5xl font-black text-white uppercase tracking-tight leading-none">
-              PUSH YOUR <br className="hidden md:block"/> <span className="text-primary-100">BOUNDARIES.</span>
+              PUSH YOUR <br className="hidden md:block" /> <span className="text-primary-100">BOUNDARIES.</span>
             </h2>
             <p className="text-zinc-400 text-base md:text-lg max-w-lg font-medium">
               Start a custom AI-driven mock interview and discover your hidden potential with detailed analytics.
@@ -184,10 +184,10 @@ export default function HomePageClient({
                 </div>
 
                 <div className="mt-auto pt-4 border-t border-white/5 flex items-center justify-between group-hover:border-primary-100/20 transition-colors">
-                   <span className="text-[10px] font-black uppercase text-zinc-500">Duration: 15min</span>
-                   <Button variant="ghost" className="h-8 px-4 text-xs font-black uppercase tracking-widest text-primary-100 hover:bg-primary-100 hover:text-zinc-950 rounded-full">
+                  <span className="text-[10px] font-black uppercase text-zinc-500">Duration: 15min</span>
+                  <Button variant="ghost" className="h-8 px-4 text-xs font-black uppercase tracking-widest text-primary-100 hover:bg-primary-100 hover:text-zinc-950 rounded-full">
                     START
-                   </Button>
+                  </Button>
                 </div>
               </div>
             </Link>
@@ -217,19 +217,7 @@ export default function HomePageClient({
             </div>
 
             <div className="grid gap-4 bg-zinc-900/50 p-6 rounded-[2.5rem] border border-white/5">
-              {allInterview?.slice(0, 5).map((interview) => (
-                <InterviewCard
-                  key={interview.id}
-                  userId={user?.id}
-                  interviewId={interview.id}
-                  role={interview.role}
-                  type={interview.type}
-                  techstack={interview.techstack}
-                  createdAt={interview.createdAt}
-                  level={interview.level}
-                  summary={interview.summary}
-                />
-              ))}
+              {allInterviewNode}
             </div>
           </section>
         )}

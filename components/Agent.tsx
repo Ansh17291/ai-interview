@@ -119,9 +119,28 @@ const Agent = ({
       setIsSpeaking(false);
     };
 
-    const onError = (error: Error) => {
-      console.error("VAPI Error:", error);
-      toast.error(`An error occurred: ${error.message || 'Unknown error'}`);
+    const onError = (error: unknown) => {
+      // Improved error logging to capture details from empty/malformed errors
+      let errorMessage = "Unknown error";
+      let errorDetails = "";
+
+      if (error instanceof Error) {
+        errorMessage = error.message || "Unknown error";
+        errorDetails = `\nStack: ${error.stack}`;
+      } else if (typeof error === "object" && error !== null) {
+        // Extract all properties from object
+        const props = Object.keys(error).map(key => {
+          const value = (error as Record<string, unknown>)[key];
+          return `${key}: ${JSON.stringify(value)}`;
+        });
+        errorDetails = props.length > 0 ? `\nDetails: ${props.join(", ")}` : "\nError object is empty";
+        errorMessage = "An error occurred during the call";
+      } else if (typeof error === "string") {
+        errorMessage = error;
+      }
+
+      console.error("VAPI Error occurred:", { error, errorMessage, errorDetails });
+      toast.error(`An error occurred: ${errorMessage}`);
       setCallStatus(CallStatus.INACTIVE); // Reset status on error
     };
 
@@ -211,6 +230,7 @@ const Agent = ({
           return;
         }
 
+        console.log("Starting VAPI workflow:", { workflowId, userName, userId });
         await vapi.start(workflowId, {
           variableValues: {
             username: userName,
@@ -225,6 +245,7 @@ const Agent = ({
             .join("\n");
         }
 
+        console.log("Starting VAPI interview:", { role, level, questionsCount: questions?.length });
         await vapi.start(interviewer, {
           variableValues: {
             questions: formattedQuestions,
@@ -236,8 +257,23 @@ const Agent = ({
       }
       setCallStatus(CallStatus.ACTIVE); // Set to ACTIVE only after successful start
     } catch (error: unknown) {
-      console.error("Failed to start VAPI call:", error);
-      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      let errorMessage = "Unknown error";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+        console.error("Failed to start VAPI call:", {
+          message: error.message,
+          stack: error.stack,
+          name: error.name,
+        });
+      } else if (typeof error === "object" && error !== null) {
+        const props = Object.keys(error).map(key =>
+          `${key}: ${JSON.stringify((error as Record<string, unknown>)[key])}`
+        );
+        errorMessage = props.length > 0 ? props.join(", ") : "Call initialization failed";
+        console.error("Failed to start VAPI call:", error);
+      } else {
+        console.error("Failed to start VAPI call:", String(error));
+      }
       toast.error(`Failed to start call: ${errorMessage}`);
       setCallStatus(CallStatus.INACTIVE); // Reset status on failure
     }

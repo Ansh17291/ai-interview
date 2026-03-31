@@ -23,6 +23,7 @@ export function UserProfile({ user }: UserProfileProps) {
 
   const handleSignOut = async () => {
     await signOut();
+    // console.log("User signed out"); not reachibg here!
     router.push("/");
   };
 

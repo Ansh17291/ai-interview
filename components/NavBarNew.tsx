@@ -15,6 +15,7 @@ import {
     LogOut,
     Zap,
 } from "lucide-react";
+import { signOut } from "@/lib/actions/auth.action";
 
 const mainLinks = [
     { href: "/", label: "Dashboard", icon: null },
@@ -57,8 +58,8 @@ export function NavBar() {
                                 key={link.href}
                                 href={link.href}
                                 className={`px-4 py-2 rounded-lg transition-colors ${pathname === link.href
-                                        ? "bg-primary-100/20 text-primary-100 font-semibold"
-                                        : "text-light-100 hover:text-primary-100"
+                                    ? "bg-primary-100/20 text-primary-100 font-semibold"
+                                    : "text-light-100 hover:text-primary-100"
                                     }`}
                             >
                                 {link.label}
@@ -113,8 +114,8 @@ export function NavBar() {
                         <Link
                             href="/resume"
                             className={`px-4 py-2 rounded-lg transition-colors ${pathname?.includes("/resume")
-                                    ? "bg-primary-100/20 text-primary-100 font-semibold"
-                                    : "text-light-100 hover:text-primary-100"
+                                ? "bg-primary-100/20 text-primary-100 font-semibold"
+                                : "text-light-100 hover:text-primary-100"
                                 }`}
                         >
                             Resume
@@ -125,15 +126,16 @@ export function NavBar() {
                             <Link
                                 href="/profile"
                                 className={`p-2 rounded-lg transition-colors ${pathname?.includes("/profile")
-                                        ? "bg-primary-100/20 text-primary-100"
-                                        : "text-light-100 hover:text-primary-100 hover:bg-dark-200/50"
+                                    ? "bg-primary-100/20 text-primary-100"
+                                    : "text-light-100 hover:text-primary-100 hover:bg-dark-200/50"
                                     }`}
                             >
                                 <User className="w-5 h-5" />
                             </Link>
                             <Link
-                                href="/api/auth/signout"
+                                href="api/auth/signout"
                                 className="p-2 rounded-lg text-destructive-100 hover:bg-destructive-100/10 transition-colors"
+                                onClick={signOut}
                             >
                                 <LogOut className="w-5 h-5" />
                             </Link>

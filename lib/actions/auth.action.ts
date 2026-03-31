@@ -3,6 +3,7 @@
 import { auth, db } from "@/firebase/admin";
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
+import { SignInParams, SignUpParams, User } from "@/types";
 
 // Session duration (1 week)
 const SESSION_DURATION = 60 * 60 * 24 * 7;
@@ -107,8 +108,10 @@ export async function signIn(params: SignInParams) {
 // Sign out user by clearing the session cookie
 export async function signOut() {
   const cookieStore = await cookies();
-
+  localStorage.clear();
   cookieStore.delete("__session");
+  localStorage.removeItem("persist:root"); // Clear persisted Redux state
+  localStorage.removeItem("user"); // Clear any user info stored in localStorage
   revalidatePath("/");
 }
 

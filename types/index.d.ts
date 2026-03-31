@@ -1,10 +1,10 @@
-interface QuizQuestion {
+export interface QuizQuestion {
   question: string;
   options: string[];
   correctAnswer: number;
 }
 
-interface Quiz {
+export interface Quiz {
   id: string;
   title: string;
   role: string;
@@ -16,7 +16,7 @@ interface Quiz {
   userId: string;
 }
 
-interface QuizResult {
+export interface QuizResult {
   id: string;
   quizId: string;
   userId: string;
@@ -26,14 +26,14 @@ interface QuizResult {
   createdAt: string;
 }
 
-interface SaveQuizResultParams {
+export interface SaveQuizResultParams {
   quizId: string;
   userId: string;
   score: number;
   totalQuestions: number;
   userAnswers: (number | null)[];
 }
-interface Feedback {
+export interface Feedback {
   id: string;
   userId: string;
   interviewId: string;
@@ -54,7 +54,7 @@ interface Feedback {
   createdAt: string;
 }
 
-interface Interview {
+export interface Interview {
   id: string;
   role: string;
   level: string;
@@ -71,21 +71,25 @@ interface Interview {
   summary?: string;
 }
 
-interface CreateFeedbackParams {
+export interface CreateFeedbackParams {
   interviewId: string;
   userId: string;
   transcript: { role: string; content: string }[];
   feedbackId?: string;
 }
 
-interface User {
+export interface User {
   name: string;
   email: string;
   id: string;
   role?: "user" | "mentor";
+  isPremium?: boolean;
+  premiumExpiresAt?: string;
+  subscriptionId?: string;
+  paymentId?: string;
 }
 
-interface MentorBooking {
+export interface MentorBooking {
   id: string;
   mentorId: number;
   mentorName: string;
@@ -99,7 +103,7 @@ interface MentorBooking {
   createdAt: string;
 }
 
-interface InterviewCardProps {
+export interface InterviewCardProps {
   interviewId?: string;
   userId?: string;
   role: string;
@@ -112,7 +116,7 @@ interface InterviewCardProps {
   summary?: string;
 }
 
-interface AgentProps {
+export interface AgentProps {
   userName: string;
   userId?: string;
   interviewId?: string;
@@ -121,27 +125,27 @@ interface AgentProps {
   questions?: string[];
 }
 
-interface RouteParams {
+export interface RouteParams {
   params: { [key: string]: string | string[] | undefined };
   searchParams: { [key: string]: string | string[] | undefined };
 }
 
-interface GetFeedbackByInterviewIdParams {
+export interface GetFeedbackByInterviewIdParams {
   interviewId: string;
   userId: string;
 }
 
-interface GetLatestInterviewsParams {
+export interface GetLatestInterviewsParams {
   userId: string;
   limit?: number;
 }
 
-interface SignInParams {
+export interface SignInParams {
   email: string;
   idToken: string;
 }
 
-interface SignUpParams {
+export interface SignUpParams {
   uid: string;
   name: string;
   email: string;
@@ -151,7 +155,7 @@ interface SignUpParams {
 
 type FormType = "sign-in" | "sign-up";
 
-interface InterviewFormProps {
+export interface InterviewFormProps {
   interviewId: string;
   role: string;
   level: string;
@@ -160,12 +164,12 @@ interface InterviewFormProps {
   amount: number;
 }
 
-interface TechIconProps {
+export interface TechIconProps {
   techStack: string[];
 }
 
 // Resume Builder Types
-interface ResumeExperience {
+export interface ResumeExperience {
   id: string;
   companyName: string;
   position: string;
@@ -175,7 +179,7 @@ interface ResumeExperience {
   description: string;
 }
 
-interface ResumeEducation {
+export interface ResumeEducation {
   id: string;
   institution: string;
   degree: string;
@@ -184,7 +188,7 @@ interface ResumeEducation {
   gpa?: string;
 }
 
-interface Resume {
+export interface Resume {
   id: string;
   userId: string;
   title: string;
@@ -215,7 +219,7 @@ interface Resume {
   updatedAt: string;
 }
 
-interface ATSScoringResult {
+export interface ATSScoringResult {
   score: number;
   feedback: string;
   missingKeywords: string[];
@@ -224,7 +228,7 @@ interface ATSScoringResult {
 }
 
 // Career Path Types
-interface LearningCourse {
+export interface LearningCourse {
   id: string;
   title: string;
   provider: "Coursera" | "Udemy" | "LinkedIn Learning" | "edX";
@@ -236,14 +240,14 @@ interface LearningCourse {
   image?: string;
 }
 
-interface CareerSkill {
+export interface CareerSkill {
   name: string;
   level: "Beginner" | "Intermediate" | "Advanced";
   courses: LearningCourse[];
   estimatedHours: number;
 }
 
-interface CareerPathStep {
+export interface CareerPathStep {
   id: string;
   stepNumber: number;
   title: string;
@@ -253,7 +257,7 @@ interface CareerPathStep {
   milestones: string[];
 }
 
-interface CareerPath {
+export interface CareerPath {
   id: string;
   role: string;
   title: string;
@@ -268,7 +272,7 @@ interface CareerPath {
   targetLevel: "Junior" | "Mid" | "Senior";
 }
 
-interface UserLearningProgress {
+export interface UserLearningProgress {
   id: string;
   userId: string;
   careerPathId: string;
@@ -281,7 +285,107 @@ interface UserLearningProgress {
   updatedAt: string;
 }
 
-interface CareerPathResponse {
+export interface CareerPathResponse {
   careerPath: CareerPath;
   userProgress?: UserLearningProgress;
+}
+
+// Payment & Subscription Types
+export interface RazorpayOrder {
+  id: string;
+  entity: string;
+  amount: number;
+  currency: string;
+  receipt: string;
+  status: string;
+  attempts: number;
+  notes: {
+    userId: string;
+    planType: string;
+  };
+  created_at: number;
+}
+
+export interface RazorpayPayment {
+  id: string;
+  entity: string;
+  amount: number;
+  currency: string;
+  status: string;
+  method: string;
+  description: string;
+  notes: {
+    userId: string;
+  };
+  fee: number;
+  tax: number;
+  net: number;
+  created_at: number;
+}
+
+export interface Subscription {
+  id: string;
+  userId: string;
+  orderId: string;
+  paymentId: string;
+  planType: "monthly" | "yearly";
+  amount: number;
+  currency: string;
+  status: "pending" | "success" | "failed" | "cancelled";
+  startDate: string;
+  endDate: string;
+  autoRenew: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateOrderParams {
+  userId: string;
+  amount: number;
+  planType: "monthly" | "yearly";
+  email: string;
+  name: string;
+}
+
+export interface VerifyPaymentParams {
+  orderId: string;
+  paymentId: string;
+  signature: string;
+  userId: string;
+}
+
+// Credits & API Usage Types
+export interface CreditDeductParams {
+  userId: string;
+  feature: string;
+  credits: number;
+  description: string;
+}
+
+export interface CreditStatus {
+  available: number;
+  used: number;
+  remaining: number;
+  monthly_limit?: number;
+  refresh_date?: string;
+}
+
+export interface CreditLog {
+  id: string;
+  userId: string;
+  action: string;
+  credits_spent: number;
+  credits_before: number;
+  credits_after: number;
+  feature: string;
+  timestamp: string;
+  description: string;
+  status: "completed" | "pending" | "failed";
+}
+
+export interface CreditCheckResult {
+  canUse: boolean;
+  available: number;
+  needed: number;
+  error?: string;
 }

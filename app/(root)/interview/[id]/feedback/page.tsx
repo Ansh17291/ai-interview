@@ -48,7 +48,15 @@ const FeedbackPage = async ({ params }: RouteParams) => {
     userId: user.id,
   });
 
-  const transcript = feedback?.transcript || interview?.transcript || [];
+  let transcript = feedback?.transcript || interview?.transcript || [];
+  
+  // Safety check: if transcript is a string (legacy/error), convert it to array format
+  if (typeof transcript === "string") {
+    transcript = [{ role: "interviewer", content: transcript }];
+  } else if (!Array.isArray(transcript)) {
+    transcript = [];
+  }
+
   const score = feedback?.totalScore || interview?.score || 0;
   const keyPoints = feedback?.keyPoints || interview?.keyPoints || [];
 
@@ -163,7 +171,7 @@ const FeedbackPage = async ({ params }: RouteParams) => {
                 <UserCheck className="w-5 h-5 text-primary-100" /> Behavioral Traits
               </h3>
               <div className="flex flex-wrap gap-3">
-                {feedback.behavioralTraits.map((trait, i) => (
+                {feedback.behavioralTraits.map((trait: string, i: number) => (
                   <span key={i} className="bg-primary-100/10 text-primary-100 px-4 py-2 rounded-xl text-sm font-bold border border-primary-100/20">
                     {trait}
                   </span>
@@ -179,7 +187,7 @@ const FeedbackPage = async ({ params }: RouteParams) => {
                 <CheckCircle2 className="w-5 h-5" /> Key Strengths
               </h4>
               <ul className="space-y-3">
-                {feedback?.strengths?.map((s, i) => (
+                {feedback?.strengths?.map((s: string, i: number) => (
                   <li key={i} className="text-sm text-light-200 flex gap-2">
                     <span className="text-success-100 mt-1">•</span> {s}
                   </li>
@@ -192,7 +200,7 @@ const FeedbackPage = async ({ params }: RouteParams) => {
                 <AlertCircle className="w-5 h-5" /> Areas to Improve
               </h4>
               <ul className="space-y-3">
-                {feedback?.areasForImprovement?.map((w, i) => (
+                {feedback?.areasForImprovement?.map((w: string, i: number) => (
                   <li key={i} className="text-sm text-light-200 flex gap-2">
                     <span className="text-destructive-100 mt-1">•</span> {w}
                   </li>
@@ -207,7 +215,7 @@ const FeedbackPage = async ({ params }: RouteParams) => {
               <Zap className="w-5 h-5 text-yellow-500" /> Technologies & Topics
             </h3>
             <div className="flex flex-wrap gap-3">
-              {interview.techstack.map((tech, i) => (
+              {interview.techstack.map((tech: string, i: number) => (
                 <div key={i} className="bg-dark-300 border border-light-400/10 px-4 py-2 rounded-xl flex items-center gap-3">
                   <DisplayTechIcons techStack={[tech]} />
                   <span className="text-white font-medium text-sm">{tech}</span>
@@ -218,7 +226,7 @@ const FeedbackPage = async ({ params }: RouteParams) => {
               <div className="mt-8 pt-6 border-t border-light-400/10">
                 <h4 className="text-sm font-bold text-light-400 uppercase tracking-widest mb-4">Performance Highlights</h4>
                 <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
-                  {keyPoints.map((point, i) => (
+                  {keyPoints.map((point: string, i: number) => (
                     <li key={i} className="text-xs text-light-200 flex items-center gap-2">
                       <div className="w-1 h-1 rounded-full bg-primary-100"></div> {point}
                     </li>
@@ -238,7 +246,7 @@ const FeedbackPage = async ({ params }: RouteParams) => {
               <TrendingUp className="w-5 h-5 text-primary-100" /> Category Breakdown
             </h3>
             <div className="space-y-6">
-              {feedback?.categoryScores?.map((cat, i) => (
+              {feedback?.categoryScores?.map((cat: any, i: number) => (
                 <div key={i} className="space-y-2">
                   <div className="flex justify-between items-end">
                     <span className="text-sm font-bold text-light-100">{cat.name}</span>
@@ -271,7 +279,7 @@ const FeedbackPage = async ({ params }: RouteParams) => {
             
             <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
               {transcript.length > 0 ? (
-                transcript.map((msg, i) => (
+                transcript.map((msg: { role: string, content: string }, i: number) => (
                   <div key={i} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
                     <div className="flex items-center gap-2 mb-1 px-1">
                       <span className="text-[10px] text-light-400 uppercase font-black tracking-widest">

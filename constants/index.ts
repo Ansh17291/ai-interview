@@ -168,24 +168,32 @@ End the conversation on a polite and positive note.
 
 export const feedbackSchema = z.object({
   totalScore: z.number().min(0).max(100),
-  categoryScores: z.array(
-    z.object({
-      name: z.enum([
-        "Communication Skills",
-        "Technical Knowledge",
-        "Problem Solving",
-        "Cultural Fit",
-        "Confidence and Clarity",
-      ]),
-      score: z.number().min(0).max(100),
-      comment: z.string(),
-    })
-  ).length(5),
+  categoryScores: z
+    .array(
+      z.object({
+        name: z.enum([
+          "Communication Skills",
+          "Technical Knowledge",
+          "Problem Solving",
+          "Cultural Fit",
+          "Confidence and Clarity",
+        ]),
+        score: z.number().min(0).max(100),
+        comment: z.string(),
+      })
+    )
+    .length(5),
   strengths: z.array(z.string()),
   areasForImprovement: z.array(z.string()),
   keyPoints: z.array(z.string()),
   finalAssessment: z.string(),
-  recommendation: z.enum(["Strong Hire", "Hire", "Leaning Hire", "Leaning No Hire", "No Hire"]),
+  recommendation: z.enum([
+    "Strong Hire",
+    "Hire",
+    "Leaning Hire",
+    "Leaning No Hire",
+    "No Hire",
+  ]),
   technicalDepth: z.number().min(0).max(100),
   behavioralTraits: z.array(z.string()),
 });
@@ -231,21 +239,17 @@ export const SAMPLE_QUIZZES: Partial<Quiz>[] = [
           "Move Fast and Break Things",
           "Customer Obsession",
           "Don't Be Evil",
-          "Connect the World"
+          "Connect the World",
         ],
-        correctAnswer: 1
+        correctAnswer: 1,
       },
       {
-        question: "What AWS service is best suited for decoupled, highly scalable message queuing?",
-        options: [
-          "Amazon SQS",
-          "Amazon SNS",
-          "Amazon RDS",
-          "AWS Lambda"
-        ],
-        correctAnswer: 0
-      }
-    ]
+        question:
+          "What AWS service is best suited for decoupled, highly scalable message queuing?",
+        options: ["Amazon SQS", "Amazon SNS", "Amazon RDS", "AWS Lambda"],
+        correctAnswer: 0,
+      },
+    ],
   },
   {
     id: "microsoft-sample",
@@ -256,16 +260,17 @@ export const SAMPLE_QUIZZES: Partial<Quiz>[] = [
     techstack: ["C#", ".NET", "Azure"],
     questions: [
       {
-        question: "Which service is used for serverless computing in Microsoft Azure?",
+        question:
+          "Which service is used for serverless computing in Microsoft Azure?",
         options: [
           "Azure Functions",
           "Azure Virtual Machines",
           "Azure App Service",
-          "Azure SQL Database"
+          "Azure SQL Database",
         ],
-        correctAnswer: 0
-      }
-    ]
+        correctAnswer: 0,
+      },
+    ],
   },
   {
     id: "google-sample",
@@ -276,26 +281,23 @@ export const SAMPLE_QUIZZES: Partial<Quiz>[] = [
     techstack: ["C++", "Python", "GCP", "Algorithms"],
     questions: [
       {
-        question: "Which distributed storage system was created by Google to handle structured data?",
-        options: [
-          "HDFS",
-          "Bigtable",
-          "DynamoDB",
-          "Cassandra"
-        ],
-        correctAnswer: 1
+        question:
+          "Which distributed storage system was created by Google to handle structured data?",
+        options: ["HDFS", "Bigtable", "DynamoDB", "Cassandra"],
+        correctAnswer: 1,
       },
       {
-        question: "Which algorithmic technique is commonly used to find the shortest path in a weighted graph without negative weights?",
+        question:
+          "Which algorithmic technique is commonly used to find the shortest path in a weighted graph without negative weights?",
         options: [
           "Bellman-Ford",
           "Depth First Search",
           "Dijkstra's Algorithm",
-          "Floyd-Warshall"
+          "Floyd-Warshall",
         ],
-        correctAnswer: 2
-      }
-    ]
+        correctAnswer: 2,
+      },
+    ],
   },
   {
     id: "meta-sample",
@@ -306,16 +308,17 @@ export const SAMPLE_QUIZZES: Partial<Quiz>[] = [
     techstack: ["React", "JavaScript", "GraphQL"],
     questions: [
       {
-        question: "How does React internally track elements across re-renders for list mapping?",
+        question:
+          "How does React internally track elements across re-renders for list mapping?",
         options: [
           "DOM traversing",
           "State referencing",
           "Using the 'key' attribute",
-          "Index polling"
+          "Index polling",
         ],
-        correctAnswer: 2
-      }
-    ]
+        correctAnswer: 2,
+      },
+    ],
   },
   {
     id: "apple-sample",
@@ -331,12 +334,12 @@ export const SAMPLE_QUIZZES: Partial<Quiz>[] = [
           "Garbage Collection",
           "Manual Memory Management",
           "Automatic Reference Counting (ARC)",
-          "RAII"
+          "RAII",
         ],
-        correctAnswer: 2
-      }
-    ]
-  }
+        correctAnswer: 2,
+      },
+    ],
+  },
 ];
 
 export const dummyInterviews: Interview[] = [
@@ -350,7 +353,7 @@ export const dummyInterviews: Interview[] = [
     questions: [
       "Explain the Virtual DOM and how React reconciliation works.",
       "How do you manage state in a large-scale React application?",
-      "Can you describe a challenging bug you fixed related to Next.js SSR?"
+      "Can you describe a challenging bug you fixed related to Next.js SSR?",
     ],
     finalized: false,
     createdAt: new Date().toISOString(),
@@ -365,7 +368,7 @@ export const dummyInterviews: Interview[] = [
     questions: [
       "How does the Node.js event loop work?",
       "Describe a strategy for caching API responses using Redis.",
-      "Explain indexing in PostgreSQL and how it improves query performance."
+      "Explain indexing in PostgreSQL and how it improves query performance.",
     ],
     finalized: false,
     createdAt: new Date().toISOString(),
@@ -380,7 +383,7 @@ export const dummyInterviews: Interview[] = [
     questions: [
       "Explain the difference between a virtual machine and a container.",
       "How do you manage secrets in a Kubernetes cluster?",
-      "Walk me through a zero-downtime deployment pipeline."
+      "Walk me through a zero-downtime deployment pipeline.",
     ],
     finalized: false,
     createdAt: new Date().toISOString(),
@@ -395,7 +398,7 @@ export const dummyInterviews: Interview[] = [
     questions: [
       "Tell me about a time you had to pivot a product roadmap.",
       "How do you handle stakeholders with conflicting priorities?",
-      "Describe a successful product launch you led."
+      "Describe a successful product launch you led.",
     ],
     finalized: false,
     createdAt: new Date().toISOString(),
@@ -412,5 +415,71 @@ export const dummyInterviews: Interview[] = [
     questions: ["What is React?"],
     finalized: false,
     createdAt: "2024-03-15T10:00:00Z",
-  }
+  },
 ];
+
+// Payment Plans & Pricing
+export const PAYMENT_PLANS = {
+  MONTHLY: {
+    name: "Monthly Premium",
+    duration: "monthly",
+    price: 29900, // in paise (₹299 = 29900 paise)
+    displayPrice: "₹299",
+    validityDays: 30,
+    features: [
+      "Unlimited Interview Practice",
+      "Resume Parsing & ATS Score",
+      "Career Path Recommendations",
+      "Community Access",
+      "Priority Support",
+    ],
+  },
+  YEARLY: {
+    name: "Yearly Premium",
+    duration: "yearly",
+    price: 299900, // in paise (₹2999 = 299900 paise)
+    displayPrice: "₹2,999",
+    validityDays: 365,
+    features: [
+      "Unlimited Interview Practice",
+      "Resume Parsing & ATS Score",
+      "Career Path Recommendations",
+      "Community Access",
+      "Priority Support",
+      "Save 40% vs Monthly",
+    ],
+  },
+};
+
+export const RAZORPAY_CONFIG = {
+  MAX_RETRIES: 3,
+  WEBHOOK_SIGNATURE_HEADER: "x-razorpay-signature",
+  CURRENCY: "INR",
+  RECEIPT_PREFIX: "receipt_",
+};
+
+// API Credits Configuration
+export const CREDIT_COSTS = {
+  INTERVIEW: 10, // 10 credits per interview session
+  RESUME_PARSE: 5, // 5 credits for resume parsing
+  ATS_SCORE: 3, // 3 credits for ATS scoring
+  CHAT_MESSAGE: 1, // 1 credit per chat message
+  CAREER_PATH: 2, // 2 credits for career path generation
+};
+
+export const CREDIT_ALLOCATIONS = {
+  MONTHLY: {
+    total: 170,
+    interview: 100,
+    resume: 50,
+    other: 20,
+    refreshCycle: 30, // days
+  },
+  YEARLY: {
+    total: 2040, // 170 * 12
+    interview: 1200, // 100 * 12
+    resume: 600, // 50 * 12
+    other: 240, // 20 * 12
+    refreshCycle: 365, // days
+  },
+};

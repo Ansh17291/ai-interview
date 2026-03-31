@@ -1,3 +1,19 @@
 import Vapi from "@vapi-ai/web";
 
-export const vapi = new Vapi(process.env.NEXT_PUBLIC_VAPI_WEB_TOKEN!);
+const apiToken = process.env.NEXT_PUBLIC_VAPI_WEB_TOKEN;
+
+if (!apiToken) {
+  console.warn("VAPI_WEB_TOKEN is not configured. VAPI calls will fail.");
+}
+
+const vapi = new Vapi(apiToken || "");
+
+// Add global error handlers for VAPI
+if (typeof window !== "undefined") {
+  // Handle any unhandled VAPI errors
+  vapi.on("error", (error: unknown) => {
+    console.error("VAPI SDK global error:", error);
+  });
+}
+
+export { vapi };
