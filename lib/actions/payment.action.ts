@@ -185,13 +185,10 @@ export async function getUserSubscription(userId: string) {
     if (isPremium && premiumExpiresAt) {
       const expiresDate = new Date(premiumExpiresAt);
       if (new Date() > expiresDate) {
-        // Mark as expired
-        await db.collection("users").doc(userId).update({
-          isPremium: false,
-        });
         return {
           success: true,
           isPremium: false,
+          isExpired: true,
           message: "Premium subscription has expired",
         };
       }

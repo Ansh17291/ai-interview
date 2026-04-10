@@ -108,10 +108,18 @@ export async function signIn(params: SignInParams) {
 // Sign out user by clearing the session cookie
 export async function signOut() {
   const cookieStore = await cookies();
-  localStorage.clear();
+  const sessionCookie = cookieStore.get("__session")?.value;
+
+  if (sessionCookie) {
+    try {
+      const decodedClaims = await auth.verifySessionCookie(sessionCookie);
+      await auth.revokeRefreshTokens(decodedClaims.sub);
+    } catch (error) {
+      console.error("Error revoking session:", error);
+    }
+  }
+
   cookieStore.delete("__session");
-  localStorage.removeItem("persist:root"); // Clear persisted Redux state
-  localStorage.removeItem("user"); // Clear any user info stored in localStorage
   revalidatePath("/");
 }
 

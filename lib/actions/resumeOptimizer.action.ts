@@ -17,12 +17,14 @@ export async function optimizeResumeForRole(
     // 1. Fetch current resume
     const doc = await db.collection("resumes").doc(resumeId).get();
     if (!doc.exists) return { success: false, error: "Resume not found" };
-    
+
     const resume = doc.data() as Resume;
     const userId = resume.userId;
 
     // 2. Prepare prompt for Gemini
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+    const genAI = new GoogleGenerativeAI(
+      process.env.GOOGLE_GENERATIVE_AI_API_KEY || ""
+    );
     const model = genAI.getGenerativeModel({ model: "gemini-2-flash" });
 
     const prompt = `
@@ -71,7 +73,7 @@ export async function optimizeResumeForRole(
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
-    
+
     // Parse JSON response
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
@@ -85,36 +87,43 @@ export async function optimizeResumeForRole(
       ...resume,
       title: `${resume.title} (Optimized for ${targetRole})`,
       summary: optimizedResume.summary,
-      experience: resume.experience.map(exp => {
-        const optimizedIdx = optimizedResume.experience.findIndex((o: any) => o.id === exp.id);
-        return optimizedIdx !== -1 ? { ...exp, description: optimizedResume.experience[optimizedIdx].description } : exp;
+      experience: resume.experience.map((exp) => {
+        const optimizedIdx = optimizedResume.experience.findIndex(
+          (o: any) => o.id === exp.id
+        );
+        return optimizedIdx !== -1
+          ? {
+              ...exp,
+              description: optimizedResume.experience[optimizedIdx].description,
+            }
+          : exp;
       }),
       skills: optimizedResume.skills,
       jobDescriptionScore: {
         score: atsAnalysis.scoreAfter,
         matchedKeywords: atsAnalysis.matchedKeywords,
-        missingKeywords: atsAnalysis.missingKeywords
+        missingKeywords: atsAnalysis.missingKeywords,
       },
       updatedAt: new Date().toISOString(),
       isOptimized: true,
       originalResumeId: resumeId,
-      targetRole: targetRole
+      targetRole: targetRole,
     };
 
     const newDoc = await db.collection("resumes").add(newResumeData);
-    
-    revalidatePath("/resume");
-    return { 
-      success: true, 
-      id: newDoc.id, 
-      analysis: atsAnalysis 
-    };
 
+    revalidatePath("/resume");
+    return {
+      success: true,
+      id: newDoc.id,
+      analysis: atsAnalysis,
+    };
   } catch (error) {
     console.error("Error optimizing resume:", error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : "Failed to optimize resume" 
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "Failed to optimize resume",
     };
   }
 }
@@ -122,17 +131,22 @@ export async function optimizeResumeForRole(
 /**
  * Quick analysis of resume against JD without creating a new version
  */
-export async function analyzeResumeAgainstJD(resumeId: string, jobDescription: string) {
+export async function analyzeResumeAgainstJD(
+  resumeId: string,
+  jobDescription: string
+) {
   try {
-     const doc = await db.collection("resumes").doc(resumeId).get();
-     if (!doc.exists) return { success: false, error: "Resume not found" };
-     
-     const resume = doc.data() as Resume;
-     
-     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
-     const model = genAI.getGenerativeModel({ model: "gemini-2-flash" });
+    const doc = await db.collection("resumes").doc(resumeId).get();
+    if (!doc.exists) return { success: false, error: "Resume not found" };
 
-     const prompt = `
+    const resume = doc.data() as Resume;
+
+    const genAI = new GoogleGenerativeAI(
+      process.env.GOOGLE_GENERATIVE_AI_API_KEY || ""
+    );
+    const model = genAI.getGenerativeModel({ model: "gemini-2-flash" });
+
+    const prompt = `
        Analyze this resume against the job description.
        
        Resume: ${JSON.stringify(resume)}
@@ -143,13 +157,13 @@ export async function analyzeResumeAgainstJD(resumeId: string, jobDescription: s
        Only return valid JSON.
      `;
 
-     const result = await model.generateContent(prompt);
-     const text = result.response.text();
-     const jsonMatch = text.match(/\{[\s\S]*\}/);
-     
-     if (!jsonMatch) return { success: false, error: "Analysis failed" };
-     
-     return { success: true, analysis: JSON.parse(jsonMatch[0]) };
+    const result = await model.generateContent(prompt);
+    const text = result.response.text();
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+
+    if (!jsonMatch) return { success: false, error: "Analysis failed" };
+
+    return { success: true, analysis: JSON.parse(jsonMatch[0]) };
   } catch (error) {
     return { success: false, error: "Failed to analyze" };
   }

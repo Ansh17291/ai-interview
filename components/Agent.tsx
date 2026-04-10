@@ -139,7 +139,12 @@ const Agent = ({
         errorMessage = error;
       }
 
-      console.error("VAPI Error occurred:", { error, errorMessage, errorDetails });
+      console.error("VAPI Error occurred:", { 
+        error, 
+        errorMessage, 
+        errorDetails,
+        fullError: JSON.stringify(error, Object.getOwnPropertyNames(error))
+      });
       toast.error(`An error occurred: ${errorMessage}`);
       setCallStatus(CallStatus.INACTIVE); // Reset status on error
     };

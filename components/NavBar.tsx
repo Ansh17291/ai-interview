@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { signOut } from "@/lib/actions/auth.action";
 
 const links = [
     { href: "/", label: "Home" },
@@ -18,6 +19,18 @@ const links = [
 
 export function NavBar() {
     const pathname = usePathname();
+    const router = useRouter();
+
+    const handleSignOut = async () => {
+        try {
+            localStorage.clear();
+            sessionStorage.clear();
+            await signOut();
+            router.push("/login");
+        } catch (error) {
+            console.error("Error signing out:", error);
+        }
+    };
 
     return (
         <nav className="flex items-center justify-between">
@@ -44,12 +57,12 @@ export function NavBar() {
                     );
                 })}
                 <li>
-                    <Link
-                        href="/api/auth/signout"
+                    <button
+                        onClick={handleSignOut}
                         className="text-destructive-100 font-bold hover:text-destructive-200 transition-colors"
                     >
                         Sign Out
-                    </Link>
+                    </button>
                 </li>
             </ul>
         </nav>

@@ -13,7 +13,9 @@ export async function parseResumeText(resumeText: string): Promise<{
   error?: string;
 }> {
   try {
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+    const genAI = new GoogleGenerativeAI(
+      process.env.GOOGLE_GENERATIVE_AI_API_KEY || ""
+    );
     const model = genAI.getGenerativeModel({ model: "gemini-2-flash" });
 
     const prompt = `
@@ -98,7 +100,7 @@ Return ONLY valid JSON, no markdown code blocks.
  * Handles PDF parsing and text extraction
  */
 export async function extractPdfText(
-  buffer: Buffer
+  buffer: Uint8Array
 ): Promise<{ success: boolean; text?: string; error?: string }> {
   try {
     // Using pdfjs-dist for PDF parsing
@@ -171,7 +173,9 @@ export async function parseResumeFile(
     let extractedText: string | undefined;
 
     if (ext === "pdf") {
-      const result = await extractPdfText(buffer);
+      // Convert Buffer to Uint8Array for pdf.js compatibility
+      const uint8Array = new Uint8Array(buffer);
+      const result = await extractPdfText(uint8Array);
       if (!result.success) return result;
       extractedText = result.text;
     } else if (ext === "docx") {

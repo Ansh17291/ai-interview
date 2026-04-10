@@ -10,9 +10,15 @@ import { v4 as uuidv4 } from "uuid";
 export async function generateCustomRoadmap(
   targetGoal: string,
   targetLevel: "Junior" | "Mid" | "Senior" = "Junior"
-): Promise<{ success: boolean; roadmap?: Partial<CareerPath>; error?: string }> {
+): Promise<{
+  success: boolean;
+  roadmap?: Partial<CareerPath>;
+  error?: string;
+}> {
   try {
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+    const genAI = new GoogleGenerativeAI(
+      process.env.GOOGLE_GENERATIVE_AI_API_KEY || ""
+    );
     const model = genAI.getGenerativeModel({ model: "gemini-2-flash" });
 
     const prompt = `
@@ -66,27 +72,27 @@ export async function generateCustomRoadmap(
 
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
-        return { success: false, error: "Failed to generate roadmap structure" };
+      return { success: false, error: "Failed to generate roadmap structure" };
     }
 
     const roadmapData = JSON.parse(jsonMatch[0]);
 
     // Ensure IDs are present for steps
     roadmapData.steps = roadmapData.steps.map((step: any) => ({
-        ...step,
-        id: uuidv4()
+      ...step,
+      id: uuidv4(),
     }));
 
     return {
-        success: true,
-        roadmap: roadmapData as Partial<CareerPath>
+      success: true,
+      roadmap: roadmapData as Partial<CareerPath>,
     };
-
   } catch (error) {
     console.error("Error generating roadmap:", error);
-    return { 
-        success: false, 
-        error: error instanceof Error ? error.message : "Failed to generate roadmap" 
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "Failed to generate roadmap",
     };
   }
 }
@@ -95,14 +101,17 @@ export async function generateCustomRoadmap(
  * Summarize goals and provide simple visualization data
  */
 export async function getRoadmapSummary(roadmap: CareerPath) {
-    const totalSteps = roadmap.steps.length;
-    const skillsToLearn = roadmap.steps.reduce((acc, step) => acc + (step.skills?.length || 0), 0);
-    const duration = roadmap.totalDuration;
-    
-    return {
-        totalSteps,
-        skillsToLearn,
-        duration,
-        role: roadmap.role
-    };
+  const totalSteps = roadmap.steps.length;
+  const skillsToLearn = roadmap.steps.reduce(
+    (acc, step) => acc + (step.skills?.length || 0),
+    0
+  );
+  const duration = roadmap.totalDuration;
+
+  return {
+    totalSteps,
+    skillsToLearn,
+    duration,
+    role: roadmap.role,
+  };
 }

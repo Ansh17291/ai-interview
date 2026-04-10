@@ -16,6 +16,7 @@ import {
     Zap,
 } from "lucide-react";
 import { signOut } from "@/lib/actions/auth.action";
+import { useRouter } from "next/navigation";
 
 const mainLinks = [
     { href: "/", label: "Dashboard", icon: null },
@@ -38,6 +39,19 @@ export function NavBar() {
     const [mobileOpen, setMobileOpen] = useState(false);
     const [featuresOpen, setFeaturesOpen] = useState(false);
     const [communityOpen, setCommunityOpen] = useState(false);
+    const router = useRouter();
+
+    const handleSignOut = async () => {
+        try {
+            localStorage.clear();
+            sessionStorage.clear();
+            await signOut();
+            router.push("/login");
+            setMobileOpen(false);
+        } catch (error) {
+            console.error("Error signing out:", error);
+        }
+    };
 
     return (
         <nav className="sticky top-0 z-40 backdrop-blur-md bg-dark-100/80 border-b border-light-400/10">
@@ -132,13 +146,12 @@ export function NavBar() {
                             >
                                 <User className="w-5 h-5" />
                             </Link>
-                            <Link
-                                href="api/auth/signout"
+                            <button
+                                onClick={handleSignOut}
                                 className="p-2 rounded-lg text-destructive-100 hover:bg-destructive-100/10 transition-colors"
-                                onClick={signOut}
                             >
                                 <LogOut className="w-5 h-5" />
-                            </Link>
+                            </button>
                         </div>
                     </div>
 
@@ -226,13 +239,12 @@ export function NavBar() {
                                 >
                                     Profile
                                 </Link>
-                                <Link
-                                    href="/api/auth/signout"
-                                    className="block px-4 py-2 rounded-lg text-destructive-100 hover:bg-destructive-100/10 transition-colors"
-                                    onClick={() => setMobileOpen(false)}
+                                <button
+                                    className="w-full text-left block px-4 py-2 rounded-lg text-destructive-100 hover:bg-destructive-100/10 transition-colors"
+                                    onClick={handleSignOut}
                                 >
                                     Sign Out
-                                </Link>
+                                </button>
                             </div>
                         </div>
                     </div>

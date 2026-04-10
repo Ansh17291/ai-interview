@@ -13,6 +13,7 @@ if (typeof window !== "undefined") {
   // Handle any unhandled VAPI errors
   vapi.on("error", (error: unknown) => {
     console.error("VAPI SDK global error:", error);
+    console.error("Full VAPI Error Details:", JSON.stringify(error, Object.getOwnPropertyNames(error)));
   });
 }
 

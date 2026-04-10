@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-import Agent from "@/components/Agent";
+import InterviewOptions from "@/components/interview/InterviewOptions";
 import { getCurrentUser } from "@/lib/actions/auth.action";
 import { getUserSubscription } from "@/lib/actions/payment.action";
 
@@ -20,15 +20,12 @@ const Page = async () => {
   }
 
   return (
-    <>
-      <h3>Interview generation</h3>
-
-      <Agent
-        userName={user.name ?? "Anonymous"}
+    <div className="container mx-auto py-10">
+      <InterviewOptions 
         userId={user.id}
-        type="generate"
-        interviewId={""} />
-    </>
+        userName={user.name ?? "Anonymous"}
+      />
+    </div>
   );
 };
 

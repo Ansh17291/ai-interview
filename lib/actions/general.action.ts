@@ -5,6 +5,7 @@ import { google } from "@ai-sdk/google";
 
 import { db } from "@/firebase/admin";
 import { feedbackSchema, interviewMetadataSchema, quizSchema, SAMPLE_QUIZZES, dummyInterviews } from "@/constants";
+import { Interview, Feedback, CreateFeedbackParams, GetFeedbackByInterviewIdParams, GetLatestInterviewsParams, SaveQuizResultParams, QuizResult, Quiz } from "@/types";
 
 type TranscriptEntry = { role: string; content: string };
 
@@ -38,7 +39,7 @@ export async function saveTranscript(params: { userId: string; interviewId?: str
 
       try {
         const { object } = await generateObject({
-          model: google("gemini-1.5-flash-latest"),
+          model: google("gemini-2-flash-latest"),
           schema: interviewMetadataSchema,
           prompt: `
             Analyze the following transcript from an AI interview session and extract the following details:
@@ -130,7 +131,7 @@ export async function createFeedback(params: CreateFeedbackParams) {
     }
 
     const { object } = await generateObject({
-      model: google("gemini-1.5-flash-latest"), 
+      model: google("gemini-2-flash-latest"), 
       schema: feedbackSchema,
       prompt: `
         You are an AI interviewer analyzing a mock interview. Your task is to evaluate the candidate based on structured categories. Be thorough and detailed in your analysis. Don't be lenient with the candidate. If there are mistakes or areas for improvement, point them out.
@@ -249,10 +250,17 @@ export async function getInterviewById(id: string): Promise<Interview | null> {
     } as Interview;
   }
 
-  // 3. Last Fallback: Try to fetch from dummyInterviews (system presets)
   const systemPreset = dummyInterviews.find(i => i.id === id);
   if (systemPreset) return systemPreset as Interview;
 
+  // 3. Fallback: Check if it's a predefined interview
+  if (id.startsWith("predefined_")) {
+    const originalId = id.replace("predefined_", "");
+    const preset = dummyInterviews.find(i => i.id === originalId);
+    if (preset) return preset as Interview;
+  }
+
+  console.error("Interview not found with id:", id);
   return null;
 }
 
@@ -268,17 +276,22 @@ export async function getFeedbackByInterviewId(
     return null;
   }
 
-  const querySnapshot = await db
-    .collection("feedback")
-    .where("interviewId", "==", interviewId)
-    .where("userId", "==", userId)
-    .limit(1)
-    .get();
+  try {
+    const querySnapshot = await db
+      .collection("feedback")
+      .where("interviewId", "==", interviewId)
+      .where("userId", "==", userId)
+      .limit(1)
+      .get();
 
-  if (querySnapshot.empty) return null;
+    if (querySnapshot.empty) return null;
 
-  const feedbackDoc = querySnapshot.docs[0];
-  return { id: feedbackDoc.id, ...feedbackDoc.data() } as Feedback;
+    const feedbackDoc = querySnapshot.docs[0];
+    return { id: feedbackDoc.id, ...feedbackDoc.data() } as Feedback;
+  } catch (error) {
+    console.error("Error getFeedbackByInterviewId:", error);
+    return null;
+  }
 }
 
 export async function getLatestInterviews(
@@ -292,17 +305,22 @@ export async function getLatestInterviews(
     return null; // Or throw an error
   }
 
-  const interviews = await db
-    .collection("interviews")
-    .orderBy("createdAt", "desc")
-    .where("finalized", "==", true)
-    .limit(limit)
-    .get();
+  try {
+      const interviews = await db
+        .collection("interviews")
+        .orderBy("createdAt", "desc")
+        .where("finalized", "==", true)
+        .limit(limit)
+        .get();
 
-  return interviews.docs.map((doc) => ({
-    id: doc.id,
-    ...doc.data(),
-  })) as Interview[];
+      return interviews.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Interview[];
+  } catch (error) {
+      console.error("Error getLatestInterviews:", error);
+      return [];
+  }
 }
 
 export async function getInterviewsByUserId(
@@ -511,7 +529,7 @@ export async function generateQuiz(params: {
 
   try {
     const { object } = await generateObject({
-      model: google("gemini-1.5-flash-latest"),
+      model: google("gemini-2-flash-latest"),
       schema: quizSchema,
       prompt: `
         Generate a quiz for a ${level} ${role} role${

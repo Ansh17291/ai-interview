@@ -180,7 +180,16 @@ export async function generateResumeFromUserData(
     };
 
     // Use Gemini to generate resume
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+    if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+      return {
+        success: false,
+        error:
+          "Gemini API key not configured. Please set GEMINI_API_KEY environment variable.",
+      };
+    }
+    const genAI = new GoogleGenerativeAI(
+      process.env.GOOGLE_GENERATIVE_AI_API_KEY
+    );
     const model = genAI.getGenerativeModel({ model: "gemini-2-flash" });
 
     const prompt = `
