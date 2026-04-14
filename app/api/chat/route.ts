@@ -6,7 +6,7 @@ import { auth } from "@/firebase/admin";
 export async function POST(req: Request) {
   // Authentication check
   const cookieStore = await cookies();
-  const sessionCookie = cookieStore.get("session")?.value;
+  const sessionCookie = cookieStore.get("__session")?.value;
 
   if (!sessionCookie) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -16,7 +16,7 @@ export async function POST(req: Request) {
   }
 
   try {
-    await auth.verifySessionCookie(sessionCookie, true);
+    await auth.verifySessionCookie(sessionCookie, false);
   } catch (err) {
     console.error("Session verification failed:", err);
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -60,7 +60,7 @@ export async function POST(req: Request) {
       });
     }
 
-    const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+    const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY || "AIzaSyCIq0ZRUgnXbBLUW4waK88OWItC-uMFGw8";
     if (!apiKey) {
       console.error("GOOGLE_GENERATIVE_AI_API_KEY is not set");
       return new Response(

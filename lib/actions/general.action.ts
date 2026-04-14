@@ -39,7 +39,7 @@ export async function saveTranscript(params: { userId: string; interviewId?: str
 
       try {
         const { object } = await generateObject({
-          model: google("gemini-2-flash-latest"),
+          model: google("gemini-2.0-flash"),
           schema: interviewMetadataSchema,
           prompt: `
             Analyze the following transcript from an AI interview session and extract the following details:
@@ -131,7 +131,7 @@ export async function createFeedback(params: CreateFeedbackParams) {
     }
 
     const { object } = await generateObject({
-      model: google("gemini-2-flash-latest"), 
+      model: google("gemini-2.0-flash"), 
       schema: feedbackSchema,
       prompt: `
         You are an AI interviewer analyzing a mock interview. Your task is to evaluate the candidate based on structured categories. Be thorough and detailed in your analysis. Don't be lenient with the candidate. If there are mistakes or areas for improvement, point them out.
@@ -260,6 +260,21 @@ export async function getInterviewById(id: string): Promise<Interview | null> {
     if (preset) return preset as Interview;
   }
 
+  // 4. Custom/Transient ID support
+  if (id.startsWith("custom_")) {
+    return {
+      id,
+      role: "Custom Role",
+      level: "Candidate",
+      techstack: ["Any"],
+      questions: ["Specifying role during call..."],
+      type: "Technical & Behavioral",
+      createdAt: new Date().toISOString(),
+      userId: "system",
+      finalized: false
+    } as Interview;
+  }
+
   console.error("Interview not found with id:", id);
   return null;
 }
@@ -361,8 +376,8 @@ export async function getCompletedInterviewsByUserId(
       ...doc.data(),
     })) as RawTranscriptRecord[];
 
-    const interviewsMap = new Map(
-      interviewsSnap.docs.map((doc) => [doc.id, { id: doc.id, ...doc.data() }])
+    const interviewsMap = new Map<string, Interview>(
+      interviewsSnap.docs.map((doc) => [doc.id, { id: doc.id, ...doc.data() } as Interview])
     );
 
     const feedbacksMap = new Map(
@@ -529,7 +544,7 @@ export async function generateQuiz(params: {
 
   try {
     const { object } = await generateObject({
-      model: google("gemini-2-flash-latest"),
+      model: google("gemini-2.0-flash"),
       schema: quizSchema,
       prompt: `
         Generate a quiz for a ${level} ${role} role${

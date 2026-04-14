@@ -1,6 +1,7 @@
 import { CreateAssistantDTO } from "@vapi-ai/web/dist/api";
 import { type } from "os";
 import { z } from "zod";
+import { Interview, Quiz } from "@/types";
 
 export const mappings = {
   "react.js": "react",
@@ -118,7 +119,7 @@ export const interviewer: CreateAssistantDTO = {
   },
   voice: {
     provider: "11labs",
-    voiceId: "sarah",
+    voiceId: "EXAVITQu4vr4xnSDxMaL", // Correct ID for Sarah
     stability: 0.4,
     similarityBoost: 0.8,
     speed: 0.9,
@@ -127,7 +128,7 @@ export const interviewer: CreateAssistantDTO = {
   },
   model: {
     provider: "openai",
-    model: "gpt-4",
+    model: "gpt-4o-mini", // Use gpt-4o-mini for better speed/cost
     messages: [
       {
         role: "system",
@@ -210,6 +211,9 @@ export const quizSchema = z.object({
 });
 
 export const interviewCovers = [
+  "/tech_1.png",
+  "/tech_2.png",
+  "/tech_3.png",
   "/adobe.png",
   "/amazon.png",
   "/facebook.png",

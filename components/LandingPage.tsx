@@ -109,7 +109,7 @@ export default function LandingPage() {
                         <div className="flex -space-x-3">
                             {[1, 2, 3, 4].map((i) => (
                                 <div key={i} className="w-10 h-10 rounded-full border-2 border-zinc-950 bg-zinc-800 flex items-center justify-center overflow-hidden">
-                                     <Image src={`https://ik.imagekit.io/prepwisedemo/avatars/avatar${i}.png?updatedAt=1710523456789`} alt="User" width={40} height={40} />
+                                     <Image src="/user-avatar.png" alt="User" width={40} height={40} />
                                 </div>
                             ))}
                             <div className="pl-4 flex flex-col items-start justify-center">
@@ -121,32 +121,20 @@ export default function LandingPage() {
                         </div>
                     </div>
 
-                    {/* Dashboard Preview Simulation */}
+                    {/* Dashboard Preview */}
                     <div className="mt-24 relative max-w-5xl mx-auto group">
                         <div className="absolute -inset-1 bg-gradient-to-r from-primary-100 to-primary-200 rounded-[2.5rem] blur opacity-20 group-hover:opacity-40 transition duration-1000"></div>
                         <div className="relative bg-zinc-900 border border-white/10 rounded-[2rem] overflow-hidden shadow-2xl">
-                             <div className="h-8 bg-zinc-800/50 border-b border-white/5 flex items-center px-4 gap-1.5">
-                                <div className="w-3 h-3 rounded-full bg-red-500/50"></div>
-                                <div className="w-3 h-3 rounded-full bg-amber-500/50"></div>
-                                <div className="w-3 h-3 rounded-full bg-emerald-500/50"></div>
-                             </div>
-                             <div className="p-4 bg-zinc-950/50">
-                                <div className="grid grid-cols-12 gap-4">
-                                    <div className="col-span-3 space-y-3">
-                                        <div className="h-6 w-full bg-white/5 rounded-md"></div>
-                                        <div className="h-6 w-2/3 bg-white/5 rounded-md"></div>
-                                        <div className="h-20 w-full bg-primary-100/5 border border-primary-100/10 rounded-xl"></div>
-                                    </div>
-                                    <div className="col-span-9 space-y-4">
-                                        <div className="grid grid-cols-3 gap-4">
-                                            {[1,2,3].map(i => <div key={i} className="h-24 bg-white/5 rounded-2xl border border-white/5"></div>)}
-                                        </div>
-                                        <div className="h-48 bg-white/5 rounded-2xl border border-white/5 animate-pulse"></div>
-                                    </div>
-                                </div>
-                             </div>
+                             <Image 
+                                src="/hero.png" 
+                                alt="IntelliCoach Dashboard" 
+                                width={1200} 
+                                height={675}
+                                className="w-full h-auto object-cover opacity-90 group-hover:opacity-100 transition-opacity duration-500"
+                             />
                         </div>
                     </div>
+
                 </div>
             </section>
 

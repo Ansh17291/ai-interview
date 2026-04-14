@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Zap, ChevronRight, User, Terminal, Layout, Server, Database, Smartphone } from "lucide-react";
 import Agent from "@/components/Agent";
 
-import JDSynchronizer from "@/components/interview/JDSynchronizer";
+
 
 interface InterviewOptionsProps {
   userId: string;
@@ -24,25 +24,20 @@ const roleIcons: Record<string, any> = {
 };
 
 export default function InterviewOptions({ userId, userName }: InterviewOptionsProps) {
-  const [selectedInterview, setSelectedInterview] = useState<typeof dummyInterviews[0] | null>(null);
-  const [isCustom, setIsCustom] = useState(false);
+  const [selectedInterview, setSelectedInterview] = useState<any | null>(null);
 
-  if (isCustom) {
-    return (
-      <div className="space-y-6">
-        <div className="max-w-4xl mx-auto flex justify-end">
-          <Button 
-            variant="ghost" 
-            onClick={() => setIsCustom(false)}
-            className="text-light-400 hover:text-light-100"
-          >
-            ← Back to Predefined Roles
-          </Button>
-        </div>
-        <JDSynchronizer userId={userId} userName={userName} />
-      </div>
-    );
-  }
+  const startCustomInterview = () => {
+    setSelectedInterview({
+      id: "custom",
+      role: "Custom Role",
+      level: "Candidate",
+      type: "Custom",
+      techstack: ["Any"],
+      questions: [
+        "Please ask me what role I am interviewing for today and what my technical background is, and then proceed with the interview based on my response.",
+      ],
+    });
+  };
 
   if (selectedInterview) {
     return (
@@ -61,7 +56,7 @@ export default function InterviewOptions({ userId, userName }: InterviewOptionsP
           userName={userName}
           userId={userId}
           type="interview"
-          interviewId={`predefined_${selectedInterview.id}`}
+          interviewId={selectedInterview.id === "custom" ? `custom_${Date.now()}` : `predefined_${selectedInterview.id}`}
           role={selectedInterview.role}
           level={selectedInterview.level}
           techStack={selectedInterview.techstack}
@@ -138,7 +133,7 @@ export default function InterviewOptions({ userId, userName }: InterviewOptionsP
         {/* Custom Role Option */}
         <Card 
           className="bg-primary-100/5 border-primary-100/20 hover:border-primary-100/50 transition-all duration-300 group cursor-pointer overflow-hidden p-0"
-          onClick={() => setIsCustom(true)}
+          onClick={startCustomInterview}
         >
           <div className="p-6 space-y-4">
             <div className="flex items-center justify-between">
@@ -155,20 +150,20 @@ export default function InterviewOptions({ userId, userName }: InterviewOptionsP
                 Other / Custom Role
               </h3>
               <p className="text-sm text-light-300 mt-1">
-                Paste a Job Description for a tailored interview
+                Start a conversation and tell the AI your desired role
               </p>
             </div>
 
             <div className="pt-2">
               <span className="text-[10px] text-primary-100 font-semibold group-hover:underline">
-                Unlock specialized preparation →
+                Quick Start Interaction →
               </span>
             </div>
           </div>
           
           <div className="bg-primary-100/10 p-4 border-t border-primary-100/10 flex items-center justify-between">
             <span className="text-xs font-bold text-primary-100">
-              AI-Powered Sync
+              Direct Access
             </span>
             <ChevronRight className="w-4 h-4 text-primary-100 group-hover:translate-x-1 transition-all" />
           </div>

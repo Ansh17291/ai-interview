@@ -29,7 +29,7 @@ export async function analyzeJobDescription(jdText: string): Promise<{ success: 
 
   try {
     const { object } = await generateObject({
-      model: google("gemini-2-flash-latest"),
+      model: google("gemini-2.0-flash"),
       schema: jdAnalysisSchema,
       prompt: `
         Analyze the following Job Description (JD) text and extract structured information.

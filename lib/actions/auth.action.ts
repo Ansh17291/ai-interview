@@ -22,7 +22,7 @@ export async function setSessionCookie(idToken: string) {
     maxAge: SESSION_DURATION,
     expires: new Date(Date.now() + SESSION_DURATION * 1000),
     httpOnly: true,
-    secure: true, // Force true for production/Vercel
+    secure: process.env.NODE_ENV === "production", // Use secure flag only in production
     path: "/",
     sameSite: "lax",
   });
@@ -145,8 +145,11 @@ export async function getCurrentUser(): Promise<User | null> {
       id: userRecord.id,
     } as User;
   } catch (error: unknown) {
-    // Changed 'any' to 'unknown'
-    console.error("Session verification failed:", error); // Changed log to error
+    const errorDetails = {
+      message: error instanceof Error ? error.message : String(error),
+      code: (error as any)?.code,
+    };
+    console.error("Session verification failed:", errorDetails);
 
     // Invalid or expired session
     return null;
