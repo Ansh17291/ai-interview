@@ -505,6 +505,7 @@ export default function ResumeBuilder({ resumeId, initialData, onSave }: ResumeB
                     {loading ? "Saving..." : "Save Resume"}
                 </Button>
             </div>
+        </div>
             )}
         </div>
     );
