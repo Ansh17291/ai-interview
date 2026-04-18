@@ -84,6 +84,7 @@ export async function getForumPosts() {
 export async function createStartupPitch(data: {
   title: string;
   founder: string;
+  founderId: string;
   roles: string[];
   stage: string;
   description: string;
@@ -203,3 +204,118 @@ export async function sendMentorMessage(
     return { success: false, error: message };
   }
 }
+
+// --- SHARED TRANSCRIPTS (HALL OF FAME) ---
+export async function shareTranscript(data: {
+  interviewId: string;
+  userId: string;
+  userName: string;
+  role: string;
+  score: number;
+  transcript: any[];
+}) {
+  try {
+    const sharedData = {
+      ...data,
+      upvotes: 0,
+      views: 0,
+      createdAt: new Date().toISOString(),
+    };
+    const docRef = await db.collection("shared_transcripts").add(sharedData);
+    revalidatePath("/community");
+    return { success: true, id: docRef.id };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    return { success: false, error: message };
+  }
+}
+
+export async function getSharedTranscripts() {
+  try {
+    const snapshot = await db
+      .collection("shared_transcripts")
+      .orderBy("score", "desc")
+      .limit(10)
+      .get();
+    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  } catch {
+    return [];
+  }
+}
+
+// --- STARTUP APPLICATIONS & MESSAGING ---
+export async function applyToStartup(data: {
+  startupId: string;
+  startupTitle: string;
+  founderId: string;
+  founderName: string;
+  applicantId: string;
+  applicantName: string;
+  message?: string;
+}) {
+  try {
+    // Check if already applied
+    const existing = await db.collection("startup_applications")
+      .where("startupId", "==", data.startupId)
+      .where("applicantId", "==", data.applicantId)
+      .get();
+    
+    if (!existing.empty) {
+      return { success: false, error: "Application already submitted for this venture." };
+    }
+
+    const application = {
+      ...data,
+      status: "pending",
+      jitsiRoom: `https://meet.jit.si/antigravity-connect-${data.startupId}-${data.applicantId}`,
+      createdAt: new Date().toISOString(),
+    };
+
+    await db.collection("startup_applications").add(application);
+    revalidatePath("/community");
+    return { success: true };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    return { success: false, error: message };
+  }
+}
+
+export async function getReceivedApplications(userId: string) {
+  try {
+    const snapshot = await db.collection("startup_applications")
+      .where("founderId", "==", userId)
+      .orderBy("createdAt", "desc")
+      .get();
+    
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  } catch (error) {
+    console.error("Failed to fetch applications", error);
+    return [];
+  }
+}
+
+export async function getSentApplications(userId: string) {
+  try {
+    const snapshot = await db.collection("startup_applications")
+      .where("applicantId", "==", userId)
+      .orderBy("createdAt", "desc")
+      .get();
+    
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  } catch (error) {
+    console.error("Failed to fetch sent applications", error);
+    return [];
+  }
+}
+
+export async function updateApplicationStatus(applicationId: string, status: "accepted" | "rejected") {
+  try {
+    await db.collection("startup_applications").doc(applicationId).update({ status });
+    revalidatePath("/community");
+    return { success: true };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    return { success: false, error: message };
+  }
+}
+

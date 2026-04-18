@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { parseResumeFile } from "@/lib/services/resumeParser";
+import { parseResumeFile, generateResumeInsights } from "@/lib/services/resumeParser";
 import { db } from "@/firebase/admin";
 import { v4 as uuidv4 } from "uuid";
 
@@ -52,6 +52,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: parseResult.error }, { status: 400 });
     }
 
+    // Generate insights
+    const resumeText = JSON.stringify(parseResult.data); // Or better, use a helper to format to text
+    const insightsResult = await generateResumeInsights(resumeText);
+
     // Save to Firestore
     const resumeId = uuidv4();
     const now = new Date().toISOString();
@@ -63,6 +67,7 @@ export async function POST(request: NextRequest) {
       ...parseResult.data,
       type: "uploaded",
       source: "file_upload",
+      insights: insightsResult.success ? insightsResult.insights : null,
       createdAt: now,
       updatedAt: now,
       isParsed: true,

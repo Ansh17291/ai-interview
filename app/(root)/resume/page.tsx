@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { getCurrentUser } from "@/lib/actions/auth.action";
 import { deleteResume, getUserResumes } from "@/lib/actions/resume.action";
 import { getUserSubscription } from "@/lib/actions/payment.action";
+import { Resume, User, ATSScoringResult } from "@/types";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import Link from "next/link";

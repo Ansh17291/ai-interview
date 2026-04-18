@@ -16,7 +16,7 @@ export async function parseResumeText(resumeText: string): Promise<{
     const genAI = new GoogleGenerativeAI(
       process.env.GOOGLE_GENERATIVE_AI_API_KEY || ""
     );
-    const model = genAI.getGenerativeModel({ model: "gemini-2-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const prompt = `
 You are an expert resume parser. Extract structured information from the following resume text and return a JSON object with this exact structure:
@@ -206,6 +206,69 @@ export async function parseResumeFile(
     return {
       success: false,
       error: error instanceof Error ? error.message : "Failed to parse resume",
+    };
+  }
+}
+
+/**
+ * Generate insights and improvement points for a resume
+ */
+export async function generateResumeInsights(resumeText: string): Promise<{
+  success: boolean;
+  insights?: {
+    score: number;
+    strengths: string[];
+    improvements: string[];
+    marketRelevance: string;
+  };
+  error?: string;
+}> {
+  try {
+    const genAI = new GoogleGenerativeAI(
+      process.env.GOOGLE_GENERATIVE_AI_API_KEY || ""
+    );
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    const prompt = `
+Analyze the following resume text and provide critical insights and improvement points.
+Be professional, constructive, and realistic.
+
+Resume Text:
+${resumeText}
+
+Return a JSON object with this structure:
+{
+  "score": number (0-100, based on layout, clarity, and impact),
+  "strengths": ["list of 3-5 strongest points"],
+  "improvements": ["list of 3-5 specific, actionable improvement points"],
+  "marketRelevance": "a short paragraph (2-3 sentences) about how relevant this resume is for current tech industry trends"
+}
+
+Return ONLY valid JSON.
+    `;
+
+    const response = await model.generateContent(prompt);
+    const responseText = response.response.text();
+
+    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      return {
+        success: false,
+        error: "Failed to generate resume insights",
+      };
+    }
+
+    const insights = JSON.parse(jsonMatch[0]);
+
+    return {
+      success: true,
+      insights,
+    };
+  } catch (error) {
+    console.error("Error generating resume insights:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to generate insights",
     };
   }
 }

@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { createResume, updateResume } from "@/lib/actions/resume.action";
-import { Plus, X, Save } from "lucide-react";
+import { Plus, X, Save, Sparkles, Edit3 } from "lucide-react";
+import { ResumeInsights } from "./resume/ResumeInsights";
 
 interface ResumeBuilderProps {
     resumeId?: string;
@@ -45,6 +46,7 @@ export default function ResumeBuilder({ resumeId, initialData, onSave }: ResumeB
     const [certInput, setCertInput] = useState("");
 
     const [loading, setLoading] = useState(false);
+    const [view, setView] = useState<"editor" | "insights">("editor");
 
     const addExperience = () => {
         setExperience([
@@ -168,7 +170,54 @@ export default function ResumeBuilder({ resumeId, initialData, onSave }: ResumeB
     };
 
     return (
-        <div className="max-w-4xl mx-auto py-6 px-4 space-y-6">
+        <div className="max-w-4xl mx-auto py-6 px-4 space-y-8">
+            {/* View Toggle */}
+            <div className="flex bg-dark-300 rounded-[2rem] p-1.5 border border-light-400/10 w-fit mx-auto shadow-2xl">
+                <button
+                    onClick={() => setView("editor")}
+                    className={`flex items-center gap-2 px-8 py-3 rounded-full text-sm font-black transition-all ${
+                        view === "editor"
+                            ? "bg-primary-100 text-dark-400 shadow-lg shadow-primary-100/20"
+                            : "text-light-400 hover:text-white"
+                    }`}
+                >
+                    <Edit3 className="w-4 h-4" /> EDITOR
+                </button>
+                <button
+                    onClick={() => setView("insights")}
+                    className={`flex items-center gap-2 px-8 py-3 rounded-full text-sm font-black transition-all ${
+                        view === "insights"
+                            ? "bg-primary-100 text-dark-400 shadow-lg shadow-primary-100/20"
+                            : "text-light-400 hover:text-white"
+                    }`}
+                >
+                    <Sparkles className="w-4 h-4" /> AI INSIGHTS
+                </button>
+            </div>
+
+            {view === "insights" ? (
+                initialData?.insights ? (
+                    <ResumeInsights insights={initialData.insights} />
+                ) : (
+                    <div className="bg-dark-300 border border-light-400/5 rounded-[2.5rem] p-20 text-center">
+                        <div className="p-6 bg-primary-100/10 w-24 h-24 rounded-full mx-auto mb-8 flex items-center justify-center">
+                            <Sparkles className="w-12 h-12 text-primary-100 opacity-40" />
+                        </div>
+                        <h3 className="text-3xl font-black text-white mb-4 italic tracking-tight">Generate Insights</h3>
+                        <p className="text-light-200 text-lg mb-10 max-w-sm mx-auto leading-relaxed">
+                            Save your resume to see AI analysis, improvement points, and market relevance score.
+                        </p>
+                        <Button 
+                            onClick={handleSave} 
+                            disabled={loading}
+                            className="px-10 py-5 bg-primary-100 text-dark-400 rounded-2xl font-black"
+                        >
+                            {loading ? "ANALYZING..." : "SAVE & ANALYZE"}
+                        </Button>
+                    </div>
+                )
+            ) : (
+                <div className="space-y-6">
             {/* Title Section */}
             <div className="bg-dark-300 border border-light-400/20 rounded-2xl p-6">
                 <h2 className="text-2xl font-bold text-white mb-4">Resume Title</h2>
@@ -456,6 +505,7 @@ export default function ResumeBuilder({ resumeId, initialData, onSave }: ResumeB
                     {loading ? "Saving..." : "Save Resume"}
                 </Button>
             </div>
+            )}
         </div>
     );
 }

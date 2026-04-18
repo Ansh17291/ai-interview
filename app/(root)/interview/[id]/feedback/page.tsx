@@ -1,13 +1,13 @@
 import Link from "next/link";
 import Image from "next/image";
 import { redirect } from "next/navigation";
-import { 
-  CheckCircle2, 
-  AlertCircle, 
-  MessageSquare, 
-  Trophy, 
-  Calendar, 
-  Clock, 
+import {
+  CheckCircle2,
+  AlertCircle,
+  MessageSquare,
+  Trophy,
+  Calendar,
+  Clock,
   ChevronLeft,
   ArrowRight,
   TrendingUp,
@@ -25,6 +25,9 @@ import { Button } from "@/components/ui/button";
 import { getCurrentUser } from "@/lib/actions/auth.action";
 import { getRandomInterviewCover } from "@/lib/utils";
 import DisplayTechIcons from "@/components/DisplayTechIcons";
+import { Transcript } from "@/components/interview/Transcript";
+import IntelligenceDashboard from "@/components/interview/IntelligenceDashboard";
+import FeedbackActions from "@/components/interview/FeedbackActions";
 
 interface RouteParams {
   params: Promise<{
@@ -49,7 +52,7 @@ const FeedbackPage = async ({ params }: RouteParams) => {
   });
 
   let transcript = feedback?.transcript || interview?.transcript || [];
-  
+
   // Safety check: if transcript is a string (legacy/error), convert it to array format
   if (typeof transcript === "string") {
     transcript = [{ role: "interviewer", content: transcript }];
@@ -72,7 +75,7 @@ const FeedbackPage = async ({ params }: RouteParams) => {
       {/* Header Info Card */}
       <div className="dark-gradient p-8 rounded-3xl border border-light-400/10 shadow-xl mb-10 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary-100/5 blur-3xl rounded-full -mr-20 -mt-20"></div>
-        
+
         <div className="flex flex-col md:flex-row gap-8 items-center relative z-10">
           <Image
             src={getRandomInterviewCover()}
@@ -91,20 +94,19 @@ const FeedbackPage = async ({ params }: RouteParams) => {
                 {interview.level}
               </span>
               {feedback?.recommendation && (
-                <span className={`px-3 py-0.5 rounded-full text-xs font-bold border uppercase tracking-wider ${
-                  feedback.recommendation.includes("Hire") && !feedback.recommendation.includes("No") 
-                  ? "bg-success-100/10 text-success-100 border-success-100/20" 
-                  : "bg-destructive-100/10 text-destructive-100 border-destructive-100/20"
-                }`}>
+                <span className={`px-3 py-0.5 rounded-full text-xs font-bold border uppercase tracking-wider ${feedback.recommendation.includes("Hire") && !feedback.recommendation.includes("No")
+                    ? "bg-success-100/10 text-success-100 border-success-100/20"
+                    : "bg-destructive-100/10 text-destructive-100 border-destructive-100/20"
+                  }`}>
                   {feedback.recommendation}
                 </span>
               )}
             </div>
-            
+
             <h1 className="text-3xl md:text-4xl font-black text-white mb-2 capitalize">
               {interview.role} <span className="text-primary-100">Feedback</span>
             </h1>
-            
+
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-5 text-light-400 text-sm">
               <div className="flex items-center gap-1.5">
                 <Calendar className="w-4 h-4 text-primary-200" />
@@ -118,7 +120,7 @@ const FeedbackPage = async ({ params }: RouteParams) => {
           </div>
 
           <div className="flex gap-4">
-             <div className="bg-dark-100/50 p-6 rounded-2xl border border-light-400/10 text-center min-w-[140px]">
+            <div className="bg-dark-100/50 p-6 rounded-2xl border border-light-400/10 text-center min-w-[140px]">
               <p className="text-xs text-light-400 uppercase font-bold tracking-widest mb-1">Overall Score</p>
               <div className="flex items-baseline justify-center gap-1">
                 <span className={`text-5xl font-black ${score >= 70 ? 'text-success-100' : 'text-primary-100'}`}>{score}</span>
@@ -142,12 +144,12 @@ const FeedbackPage = async ({ params }: RouteParams) => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Left Side: Summary & Scores */}
         <div className="lg:col-span-7 flex flex-col gap-8">
-          
+
           {/* Final Assessment */}
           <div className="bg-dark-200/40 border border-light-400/10 rounded-2xl p-8 relative overflow-hidden">
-             <div className="absolute top-0 right-0 p-4 opacity-10">
-                <Award className="w-24 h-24 text-primary-100" />
-             </div>
+            <div className="absolute top-0 right-0 p-4 opacity-10">
+              <Award className="w-24 h-24 text-primary-100" />
+            </div>
             <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
               <Trophy className="w-5 h-5 text-yellow-500" /> AI Final Assessment
             </h3>
@@ -155,12 +157,12 @@ const FeedbackPage = async ({ params }: RouteParams) => {
               &quot;{feedback?.finalAssessment || interview.summary || "You have completed the interview session. The AI has analyzed your performance based on the interaction transcript."}&quot;
             </p>
             {feedback?.recommendation && (
-               <div className="mt-6 p-4 rounded-xl bg-dark-300/50 border border-light-400/5">
-                  <span className="text-xs text-light-400 uppercase font-bold tracking-widest block mb-1">AI Recommendation</span>
-                  <p className={`text-xl font-black ${feedback.recommendation.includes("Hire") && !feedback.recommendation.includes("No") ? "text-success-100" : "text-destructive-100"}`}>
-                    {feedback.recommendation}
-                  </p>
-               </div>
+              <div className="mt-6 p-4 rounded-xl bg-dark-300/50 border border-light-400/5">
+                <span className="text-xs text-light-400 uppercase font-bold tracking-widest block mb-1">AI Recommendation</span>
+                <p className={`text-xl font-black ${feedback.recommendation.includes("Hire") && !feedback.recommendation.includes("No") ? "text-success-100" : "text-destructive-100"}`}>
+                  {feedback.recommendation}
+                </p>
+              </div>
             )}
           </div>
 
@@ -238,8 +240,11 @@ const FeedbackPage = async ({ params }: RouteParams) => {
         </div>
 
         {/* Right Side: Detailed Breakdown & Transcript */}
+        <div className="lg:col-span-12 lg:order-last mt-8">
+             {feedback && <IntelligenceDashboard feedback={feedback} />}
+        </div>
+
         <div className="lg:col-span-5 flex flex-col gap-8">
-          
           {/* Interview Breakdown */}
           <div className="bg-dark-200/40 border border-light-400/10 rounded-2xl p-8">
             <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
@@ -253,73 +258,31 @@ const FeedbackPage = async ({ params }: RouteParams) => {
                     <span className="text-xs font-bold text-primary-100">{cat.score}/100</span>
                   </div>
                   <div className="h-2 bg-dark-300 rounded-full overflow-hidden">
-                    <div 
-                      className={`h-full rounded-full transition-all duration-1000 ${i % 2 === 0 ? 'bg-primary-100' : 'bg-primary-200'}`} 
+                    <div
+                      className={`h-full rounded-full transition-all duration-1000 ${i % 2 === 0 ? 'bg-primary-100' : 'bg-primary-200'}`}
                       style={{ width: `${cat.score}%` }}
                     ></div>
                   </div>
                   {cat.comment && <p className="text-[10px] text-light-400 italic mt-1">{cat.comment}</p>}
                 </div>
               )) || (
-                <div className="text-center py-10 text-light-400 text-sm">
-                  Detailed category analysis is not available for this session type.
-                </div>
-              )}
+                  <div className="text-center py-10 text-light-400 text-sm">
+                    Detailed category analysis is not available for this session type.
+                  </div>
+                )}
             </div>
           </div>
 
           {/* Full Transcript */}
-          <div className="bg-dark-200/40 border border-light-400/10 rounded-2xl overflow-hidden flex flex-col h-[500px]">
-            <div className="p-6 border-b border-light-400/10 bg-dark-300/30 flex items-center justify-between">
-              <h3 className="font-bold text-white flex items-center gap-2">
-                <MessageSquare className="w-5 h-5 text-light-400" /> Interaction Log
-              </h3>
-              <span className="text-[10px] bg-dark-100 px-2 py-1 rounded text-light-400 uppercase font-bold tracking-tighter">Read-only</span>
-            </div>
-            
-            <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
-              {transcript.length > 0 ? (
-                transcript.map((msg: { role: string, content: string }, i: number) => (
-                  <div key={i} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
-                    <div className="flex items-center gap-2 mb-1 px-1">
-                      <span className="text-[10px] text-light-400 uppercase font-black tracking-widest">
-                        {msg.role === 'user' ? 'You' : 'AI Interviewer'}
-                      </span>
-                    </div>
-                    <div className={`px-4 py-3 rounded-2xl max-w-[90%] text-sm leading-relaxed ${
-                      msg.role === 'user' 
-                        ? 'bg-primary-200 text-dark-100 font-medium rounded-tr-sm shadow-md' 
-                        : 'bg-dark-100 border border-light-400/10 text-light-100 rounded-tl-sm'
-                    }`}>
-                      {msg.content}
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="h-full flex flex-col items-center justify-center text-center text-light-400 p-10">
-                  <MessageSquare className="w-12 h-12 mb-4 opacity-10" />
-                  <p className="text-sm">Transcript could not be loaded for this session.</p>
-                </div>
-              )}
-            </div>
-          </div>
+          <Transcript
+            transcript={transcript}
+            height="500px"
+          />
         </div>
       </div>
 
       {/* Footer Actions */}
-      <div className="mt-12 flex flex-col sm:flex-row gap-4 justify-center border-t border-light-400/10 pt-10">
-        <Button className="h-14 px-8 rounded-xl bg-dark-200 border border-light-400/20 text-white font-bold hover:bg-dark-300 transition-all flex items-center gap-2" asChild>
-          <Link href="/">
-            <LayoutDashboard className="w-5 h-5" /> Dashboard
-          </Link>
-        </Button>
-
-        <Button className="h-14 px-10 rounded-xl bg-primary-100 text-dark-100 font-black text-lg hover:bg-primary-200 transition-all shadow-lg flex items-center gap-2" asChild>
-          <Link href={`/interview/${id}?start=true`}>
-            Retake Mock Interview <ArrowRight className="w-5 h-5" />
-          </Link>
-        </Button>
-      </div>
+      <FeedbackActions interviewId={id} />
     </div>
   );
 };

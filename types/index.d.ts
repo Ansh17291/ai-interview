@@ -51,6 +51,17 @@ export interface Feedback {
   recommendation: string;
   technicalDepth: number;
   behavioralTraits: string[];
+  emotionalIntelligence: number;
+  stressManagement: number;
+  learningAgility: number;
+  fillerWords: {
+    um: number;
+    uh: number;
+    like: number;
+    total: number;
+  };
+  speakingPace: "Slow" | "Moderate" | "Fast" | "Irregular";
+  sentimentTrend: number[];
   createdAt: string;
 }
 
@@ -217,6 +228,12 @@ export interface Resume {
   };
   createdAt: string;
   updatedAt: string;
+  insights?: {
+    score: number;
+    strengths: string[];
+    improvements: string[];
+    marketRelevance: string;
+  };
 }
 
 export interface ATSScoringResult {

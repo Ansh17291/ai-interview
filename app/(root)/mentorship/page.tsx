@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Video, Star, Clock, Globe, Briefcase, GraduationCap, X, CheckCircle2 } from "lucide-react";
+import { Video, Star, Clock, Globe, Briefcase, GraduationCap, X, CheckCircle2, Sparkles, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
@@ -133,17 +133,55 @@ export default function MentorshipPage() {
         </div>
       </div>
 
-      <div className="dark-gradient border border-light-400/20 p-6 md:p-12 rounded-[2rem] mb-12 relative overflow-hidden flex flex-col items-center text-center">
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[300px] bg-primary-100/5 blur-[100px] rounded-full pointer-events-none"></div>
-        <h2 className="text-xl md:text-3xl font-black text-white mb-4 z-10 relative uppercase tracking-tight">Need personalized guidance?</h2>
-        <p className="text-light-200 text-sm md:text-base max-w-2xl mb-8 z-10 relative font-medium">
-          Use IntelliCoach Mentors to instantly book video sessions. Whether you want a resume review, system design architecture discussion, or just generic career advice from people who have cracked top FAANG companies.
-        </p>
-        <div className="flex flex-wrap justify-center gap-4 z-10 relative">
-          <div className="bg-dark-200/80 backdrop-blur-sm border border-light-400/10 px-6 py-3 rounded-full flex items-center gap-3">
-            <span className="w-2 h-2 rounded-full bg-success-100 animate-pulse"></span>
-            <span className="text-success-100 font-black text-xs md:text-sm uppercase tracking-wider">14 Mentors Online Right Now</span>
+      <div className="dark-gradient border border-light-400/20 p-6 md:p-12 rounded-[2rem] mb-12 relative overflow-hidden flex flex-col md:flex-row items-center gap-8 group">
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[300px] bg-primary-100/5 blur-[100px] rounded-full pointer-events-none group-hover:bg-primary-100/10 transition-all duration-700"></div>
+        
+        <div className="flex-1 text-center md:text-left z-10 relative">
+          <div className="flex items-center gap-3 mb-4 justify-center md:justify-start">
+             <div className="bg-primary-100/10 p-2 rounded-lg border border-primary-100/20">
+                <Sparkles className="w-5 h-5 text-primary-100 animate-pulse" />
+             </div>
+             <span className="text-xs font-black text-primary-100 uppercase tracking-widest">AI Intelligence Matcher</span>
           </div>
+          <h2 className="text-2xl md:text-3xl font-black text-white mb-4 uppercase tracking-tight leading-tight">Match with FAANG Mentors <br/> based on your <span className="text-primary-100">Performance</span>.</h2>
+          <p className="text-light-200 text-sm md:text-base max-w-xl mb-6 font-medium leading-relaxed">
+            Our AI analyzes your latest interview transcripts and feedback to match you with mentors who specialize in your specific improvement areas.
+          </p>
+          <div className="flex flex-wrap justify-center md:justify-start gap-4">
+            <div className="bg-dark-200/80 backdrop-blur-sm border border-light-400/10 px-6 py-3 rounded-full flex items-center gap-3 transition-all hover:border-primary-100/30">
+              <span className="w-2.5 h-2.5 rounded-full bg-success-100 animate-pulse"></span>
+              <span className="text-success-100 font-black text-[10px] md:text-xs uppercase tracking-wider font-mono">14 Elite Mentors Online</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="w-full md:w-fit z-10 relative">
+           <div className="bg-dark-300/80 backdrop-blur-md border border-white/5 p-6 rounded-[2rem] shadow-2xl space-y-4 min-w-[300px] group-hover:border-primary-100/20 transition-all">
+              <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest text-center">Your Improvement Area</p>
+              <div className="flex items-center justify-between gap-4 py-2 border-b border-white/5">
+                 <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-red-400/10 flex items-center justify-center border border-red-400/20 px-2 py-0.5"><span className="text-red-400 font-black text-[10px]">!</span></div>
+                    <span className="text-xs font-black text-white uppercase tracking-tight">System Design</span>
+                 </div>
+                 <span className="text-[10px] font-black text-red-400 uppercase tracking-widest animate-pulse">Critical Gap</span>
+              </div>
+              <div className="space-y-3 pt-2">
+                 <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Top AI Match</p>
+                 <div className="flex items-center gap-4 group/mentor p-2 rounded-xl hover:bg-white/5 transition-all">
+                    <div className="relative">
+                       <Image src="/facebook.png" alt="mentor" width={40} height={40} className="rounded-xl border border-white/10" />
+                       <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-success-100 rounded-full border-2 border-dark-100"></div>
+                    </div>
+                    <div>
+                       <p className="text-xs font-black text-white uppercase tracking-tight">Marcus Johnson</p>
+                       <p className="text-[9px] text-zinc-500 uppercase font-black tracking-widest truncate max-w-[120px]">Sr. Manager @ Meta</p>
+                    </div>
+                 </div>
+              </div>
+              <Button className="w-full h-12 bg-white text-dark-100 font-black text-[10px] uppercase tracking-widest rounded-xl hover:bg-primary-100 transition-all shadow-[0_10px_30px_rgba(73,222,80,0.1)]">
+                 Instant Connect <TrendingUp className="w-3.5 h-3.5 ml-1.5" />
+              </Button>
+           </div>
         </div>
       </div>
 

@@ -4,8 +4,23 @@ import { generateObject } from "ai";
 import { google } from "@ai-sdk/google";
 
 import { db } from "@/firebase/admin";
-import { feedbackSchema, interviewMetadataSchema, quizSchema, SAMPLE_QUIZZES, dummyInterviews } from "@/constants";
-import { Interview, Feedback, CreateFeedbackParams, GetFeedbackByInterviewIdParams, GetLatestInterviewsParams, SaveQuizResultParams, QuizResult, Quiz } from "@/types";
+import {
+  feedbackSchema,
+  interviewMetadataSchema,
+  quizSchema,
+  SAMPLE_QUIZZES,
+  dummyInterviews,
+} from "@/constants";
+import {
+  Interview,
+  Feedback,
+  CreateFeedbackParams,
+  GetFeedbackByInterviewIdParams,
+  GetLatestInterviewsParams,
+  SaveQuizResultParams,
+  QuizResult,
+  Quiz,
+} from "@/types";
 
 type TranscriptEntry = { role: string; content: string };
 
@@ -24,12 +39,18 @@ type RawTranscriptRecord = {
   summary?: string;
 };
 
-export async function saveTranscript(params: { userId: string; interviewId?: string; transcript: TranscriptEntry[]; type: string }) {
+export async function saveTranscript(params: {
+  userId: string;
+  interviewId?: string;
+  transcript: TranscriptEntry[];
+  type: string;
+}) {
   const { userId, interviewId, transcript, type } = params;
   try {
     let metadata = {};
 
-    if (type === "generate") {
+    // Extract metadata for both "generate" and "interview" types
+    if (type === "generate" || type === "interview") {
       const formattedTranscript = transcript
         .map(
           (sentence: { role: string; content: string }) =>
@@ -39,7 +60,7 @@ export async function saveTranscript(params: { userId: string; interviewId?: str
 
       try {
         const { object } = await generateObject({
-          model: google("gemini-2.0-flash"),
+          model: google("gemini-1.5-flash"),
           schema: interviewMetadataSchema,
           prompt: `
             Analyze the following transcript from an AI interview session and extract the following details:
@@ -60,13 +81,14 @@ export async function saveTranscript(params: { userId: string; interviewId?: str
         console.error("Error extracting metadata with AI:", aiError);
         // Fallback metadata if AI fails
         metadata = {
-          role: "AI Generation Session",
+          role:
+            type === "generate" ? "AI Generation Session" : "Interview Session",
           level: "N/A",
-          type: "General",
+          type: type === "generate" ? "General" : "Technical",
           techStack: [],
           numQuestions: 0,
           score: 0,
-          summary: "Session completed with no summary generated."
+          summary: "Session completed with no summary generated.",
         };
       }
     }
@@ -92,7 +114,7 @@ export async function createFeedback(params: CreateFeedbackParams) {
   const { interviewId, userId, transcript, feedbackId } = params;
   console.log("createFeedback called for interviewId:", interviewId);
 
-  // 1. Save the transcript to the raw transcripts collection for history
+  // 1. Save the transcript to the raw transcripts collection for history (metadata extracted automatically)
   try {
     await saveTranscript({
       userId,
@@ -106,7 +128,8 @@ export async function createFeedback(params: CreateFeedbackParams) {
   }
 
   // 2. Immediately save the transcript to the interview document for tracking
-  if (interviewId) {
+  // Skip for predefined/dummy interviews as they don't have Firestore documents
+  if (interviewId && !interviewId.startsWith("predefined_") && !interviewId.startsWith("quick-")) {
     try {
       await db.collection("interviews").doc(interviewId).update({
         transcript: transcript,
@@ -131,7 +154,7 @@ export async function createFeedback(params: CreateFeedbackParams) {
     }
 
     const { object } = await generateObject({
-      model: google("gemini-2.0-flash"), 
+      model: google("gemini-1.5-flash"),
       schema: feedbackSchema,
       prompt: `
         You are an AI interviewer analyzing a mock interview. Your task is to evaluate the candidate based on structured categories. Be thorough and detailed in your analysis. Don't be lenient with the candidate. If there are mistakes or areas for improvement, point them out.
@@ -153,6 +176,14 @@ export async function createFeedback(params: CreateFeedbackParams) {
         - Give a clear recommendation: "Strong Hire", "Hire", "Leaning Hire", "Leaning No Hire", or "No Hire".
         - Assess technical depth (0-100).
         - Identify 3-5 behavioral traits observed (e.g., "Analytical", "Proactive", "Resilient").
+        
+        Advanced Analytics:
+        - **Emotional Intelligence**: Scored 0-100 based on empathy and self-awareness.
+        - **Stress Management**: Scored 0-100 based on handling difficult questions.
+        - **Learning Agility**: Scored 0-100 based on adaptability and quick thinking.
+        - **Filler Words**: Count occurrences of "um", "uh", "like" (estimated from transcript).
+        - **Speaking Pace**: One of "Slow", "Moderate", "Fast", "Irregular".
+        - **Sentiment Trend**: A sequence of 7 numbers (0-100) representing user confidence/positivity at 7 roughly equal intervals during the session.
         `,
       system:
         "You are a professional interviewer analyzing a mock interview. Your task is to evaluate the candidate based on structured categories",
@@ -160,7 +191,8 @@ export async function createFeedback(params: CreateFeedbackParams) {
 
     // Manually calculate total score for accuracy
     const calculatedTotalScore = Math.round(
-      object.categoryScores.reduce((acc, cat) => acc + cat.score, 0) / object.categoryScores.length
+      object.categoryScores.reduce((acc, cat) => acc + cat.score, 0) /
+        object.categoryScores.length
     );
 
     const feedback = {
@@ -176,6 +208,13 @@ export async function createFeedback(params: CreateFeedbackParams) {
       recommendation: object.recommendation,
       technicalDepth: object.technicalDepth,
       behavioralTraits: object.behavioralTraits,
+      // Advanced Metrics
+      emotionalIntelligence: object.emotionalIntelligence,
+      stressManagement: object.stressManagement,
+      learningAgility: object.learningAgility,
+      fillerWords: object.fillerWords,
+      speakingPace: object.speakingPace,
+      sentimentTrend: object.sentimentTrend,
       createdAt: new Date().toISOString(),
     };
 
@@ -192,10 +231,20 @@ export async function createFeedback(params: CreateFeedbackParams) {
 
     // Update interview doc with keyPoints as well
     if (interviewId) {
-      await db.collection("interviews").doc(interviewId).update({
-        keyPoints: object.keyPoints,
-        finalized: true,
-      }).catch(err => console.error("Error updating interview keyPoints:", err));
+      await db
+        .collection("interviews")
+        .doc(interviewId)
+        .update({
+          keyPoints: object.keyPoints,
+          finalized: true,
+        })
+        .catch((err) => {
+          if (err.code === 5) {
+            console.log("Skipping keyPoints update for system/dummy interview.");
+          } else {
+            console.error("Error updating interview keyPoints:", err);
+          }
+        });
     }
 
     return { success: true, feedbackId: feedbackRef.id };
@@ -203,16 +252,16 @@ export async function createFeedback(params: CreateFeedbackParams) {
     console.error("Error saving feedback:", error);
     let errorMessage = "An unexpected error occurred.";
 
-    if (typeof error === 'object' && error !== null) {
-      if ('message' in error && typeof error.message === 'string') {
+    if (typeof error === "object" && error !== null) {
+      if ("message" in error && typeof error.message === "string") {
         errorMessage = error.message;
       }
-      if ('statusCode' in error && typeof error.statusCode === 'number') {
+      if ("statusCode" in error && typeof error.statusCode === "number") {
         if (errorMessage.includes("quota") || error.statusCode === 429) {
           errorMessage = "API quota exceeded. Please try again later.";
         }
       } else if (errorMessage.includes("quota")) {
-         errorMessage = "API quota exceeded. Please try again later.";
+        errorMessage = "API quota exceeded. Please try again later.";
       }
     }
 
@@ -235,14 +284,18 @@ export async function getInterviewById(id: string): Promise<Interview | null> {
     const t = transcriptDoc.data() as RawTranscriptRecord;
     return {
       id: transcriptDoc.id,
-      role: t.role || (t.type === "generate" ? "AI Generation Session" : "AI Conversation"),
+      role:
+        t.role ||
+        (t.type === "generate" ? "AI Generation Session" : "AI Conversation"),
       level: t.level || "N/A",
       type: t.type || "General",
       techstack: t.techStack || [],
       createdAt: t.createdAt,
       userId: t.userId,
       finalized: true,
-      questions: t.numQuestions ? Array(t.numQuestions).fill("AI Generated Question") : [],
+      questions: t.numQuestions
+        ? Array(t.numQuestions).fill("AI Generated Question")
+        : [],
       numQuestions: t.numQuestions,
       score: t.score,
       summary: t.summary,
@@ -250,13 +303,13 @@ export async function getInterviewById(id: string): Promise<Interview | null> {
     } as Interview;
   }
 
-  const systemPreset = dummyInterviews.find(i => i.id === id);
+  const systemPreset = dummyInterviews.find((i) => i.id === id);
   if (systemPreset) return systemPreset as Interview;
 
   // 3. Fallback: Check if it's a predefined interview
   if (id.startsWith("predefined_")) {
     const originalId = id.replace("predefined_", "");
-    const preset = dummyInterviews.find(i => i.id === originalId);
+    const preset = dummyInterviews.find((i) => i.id === originalId);
     if (preset) return preset as Interview;
   }
 
@@ -271,7 +324,7 @@ export async function getInterviewById(id: string): Promise<Interview | null> {
       type: "Technical & Behavioral",
       createdAt: new Date().toISOString(),
       userId: "system",
-      finalized: false
+      finalized: false,
     } as Interview;
   }
 
@@ -321,20 +374,20 @@ export async function getLatestInterviews(
   }
 
   try {
-      const interviews = await db
-        .collection("interviews")
-        .orderBy("createdAt", "desc")
-        .where("finalized", "==", true)
-        .limit(limit)
-        .get();
+    const interviews = await db
+      .collection("interviews")
+      .orderBy("createdAt", "desc")
+      .where("finalized", "==", true)
+      .limit(limit)
+      .get();
 
-      return interviews.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Interview[];
+    return interviews.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as Interview[];
   } catch (error) {
-      console.error("Error getLatestInterviews:", error);
-      return [];
+    console.error("Error getLatestInterviews:", error);
+    return [];
   }
 }
 
@@ -364,7 +417,11 @@ export async function getCompletedInterviewsByUserId(
   try {
     // 1. Fetch all transcripts, interviews, and feedbacks for this user
     const [transcriptsSnap, interviewsSnap, feedbacksSnap] = await Promise.all([
-      db.collection("transcripts").where("userId", "==", userId).orderBy("createdAt", "desc").get(),
+      db
+        .collection("transcripts")
+        .where("userId", "==", userId)
+        .orderBy("createdAt", "desc")
+        .get(),
       db.collection("interviews").where("userId", "==", userId).get(),
       db.collection("feedback").where("userId", "==", userId).get(),
     ]);
@@ -377,7 +434,10 @@ export async function getCompletedInterviewsByUserId(
     })) as RawTranscriptRecord[];
 
     const interviewsMap = new Map<string, Interview>(
-      interviewsSnap.docs.map((doc) => [doc.id, { id: doc.id, ...doc.data() } as Interview])
+      interviewsSnap.docs.map((doc) => [
+        doc.id,
+        { id: doc.id, ...doc.data() } as Interview,
+      ])
     );
 
     const feedbacksMap = new Map(
@@ -387,24 +447,45 @@ export async function getCompletedInterviewsByUserId(
     // 3. Map transcripts to interviews, providing fallbacks for standalone sessions
     const completedInterviews = transcripts
       .map((t) => {
-        const interview = t.interviewId ? interviewsMap.get(t.interviewId) : null;
+        const interview = t.interviewId
+          ? interviewsMap.get(t.interviewId)
+          : null;
         const feedback = t.interviewId ? feedbacksMap.get(t.interviewId) : null;
-        
+
+        // Determine the role - prefer interview role, then transcript role, then fallback
+        const roleToUse =
+          interview?.role ||
+          t.role ||
+          (t.type === "generate"
+            ? "AI Generation Session"
+            : "Interview Session");
+
+        // Generate summary from feedback or use existing
+        const summaryToUse =
+          t.summary ||
+          interview?.summary ||
+          (feedback?.keyPoints?.[0]
+            ? `${feedback.keyPoints.slice(0, 2).join(". ")}.`
+            : feedback?.finalAssessment?.substring(0, 100) ||
+              "Interview completed with feedback available.");
+
         if (!interview) {
           // Use AI-extracted metadata if available, otherwise fallback
           const fallbackInterview: Interview = {
             id: t.interviewId || t.id,
-            role: t.role || (t.type === "generate" ? "AI Generation Session" : "AI Conversation"),
+            role: roleToUse,
             level: t.level || "N/A",
             type: t.type || "General",
             techstack: t.techStack || [],
             createdAt: t.createdAt,
             userId: t.userId,
             finalized: true,
-            questions: t.numQuestions ? Array(t.numQuestions).fill("AI Generated Question") : [],
+            questions: t.numQuestions
+              ? Array(t.numQuestions).fill("AI Generated Question")
+              : [],
             numQuestions: t.numQuestions,
             score: t.score || (feedback ? feedback.totalScore : null),
-            summary: t.summary,
+            summary: summaryToUse,
           };
 
           return fallbackInterview;
@@ -412,20 +493,24 @@ export async function getCompletedInterviewsByUserId(
 
         return {
           ...interview,
+          role: interview.role || roleToUse, // Use interview role or fallback to transcript role
           transcript: t.transcript,
           createdAt: t.createdAt,
           id: t.interviewId,
           techstack: interview.techstack || t.techStack || [],
           numQuestions: t.numQuestions || interview.questions?.length,
           score: t.score || (feedback ? feedback.totalScore : interview.score),
-          summary: t.summary || interview.summary,
+          summary: summaryToUse,
         } as Interview;
       })
       .filter((i) => i !== null) as Interview[];
 
     return completedInterviews;
   } catch (error) {
-    console.error("Error fetching completed interviews from transcripts:", error);
+    console.error(
+      "Error fetching completed interviews from transcripts:",
+      error
+    );
     return [];
   }
 }
@@ -445,22 +530,31 @@ export async function getUserStats(userId: string) {
     const userQuizResults = quizResults ?? [];
 
     // Separate planned interviews from standalone ones
-    const standaloneInterviewsCount = completedInterviews.filter(ci => 
-      !userInterviews.some(ui => ui.id === ci.id)
+    const standaloneInterviewsCount = completedInterviews.filter(
+      (ci) => !userInterviews.some((ui) => ui.id === ci.id)
     ).length;
 
-    const totalInterviewsCount = userInterviews.length + standaloneInterviewsCount;
+    const totalInterviewsCount =
+      userInterviews.length + standaloneInterviewsCount;
 
     // Calculate average score from all completed interviews that have a score
-    const interviewsWithScore = completedInterviews.filter(i => i.score !== undefined && i.score !== null);
-    const averageInterviewScore = interviewsWithScore.length > 0
-      ? interviewsWithScore.reduce((acc, i) => acc + (i.score || 0), 0) / interviewsWithScore.length
-      : 0;
+    const interviewsWithScore = completedInterviews.filter(
+      (i) => i.score !== undefined && i.score !== null
+    );
+    const averageInterviewScore =
+      interviewsWithScore.length > 0
+        ? interviewsWithScore.reduce((acc, i) => acc + (i.score || 0), 0) /
+          interviewsWithScore.length
+        : 0;
 
     // Calculate average score from quizzes
-    const averageQuizScore = userQuizResults.length > 0
-      ? userQuizResults.reduce((acc, qr) => acc + (qr.score / qr.totalQuestions) * 100, 0) / userQuizResults.length
-      : 0;
+    const averageQuizScore =
+      userQuizResults.length > 0
+        ? userQuizResults.reduce(
+            (acc, qr) => acc + (qr.score / qr.totalQuestions) * 100,
+            0
+          ) / userQuizResults.length
+        : 0;
 
     // Weighted average score
     let averageScore = 0;
@@ -490,7 +584,7 @@ export async function getUserStats(userId: string) {
 export async function saveQuizResult(params: SaveQuizResultParams) {
   try {
     const { quizId, userId, score, totalQuestions, userAnswers } = params;
-    
+
     const result = {
       quizId,
       userId,
@@ -502,7 +596,7 @@ export async function saveQuizResult(params: SaveQuizResultParams) {
 
     const docRef = await db.collection("quiz_results").add(result);
     console.log("Quiz result saved successfully with id:", docRef.id);
-    
+
     return { success: true, id: docRef.id };
   } catch (error) {
     console.error("Error saving quiz result:", error);
@@ -510,7 +604,9 @@ export async function saveQuizResult(params: SaveQuizResultParams) {
   }
 }
 
-export async function getQuizResultsByUserId(userId: string): Promise<QuizResult[]> {
+export async function getQuizResultsByUserId(
+  userId: string
+): Promise<QuizResult[]> {
   try {
     const results = await db
       .collection("quiz_results")
@@ -523,8 +619,9 @@ export async function getQuizResultsByUserId(userId: string): Promise<QuizResult
     })) as QuizResult[];
 
     // Sort in memory to avoid requiring a composite index immediately
-    return quizResults.sort((a, b) => 
-      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    return quizResults.sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
   } catch (error) {
     console.error("Error fetching quiz results:", error);
@@ -544,12 +641,12 @@ export async function generateQuiz(params: {
 
   try {
     const { object } = await generateObject({
-      model: google("gemini-2.0-flash"),
+      model: google("gemini-1.5-flash"),
       schema: quizSchema,
       prompt: `
         Generate a quiz for a ${level} ${role} role${
-        company ? ` at ${company}` : ""
-      }.
+          company ? ` at ${company}` : ""
+        }.
         The tech stack includes: ${techstack.join(", ")}.
         Provide ${amount} multiple-choice questions with 4 options each and the index of the correct answer (0-3).
         The questions should be challenging and relevant to the role and tech stack.
@@ -574,23 +671,24 @@ export async function generateQuiz(params: {
     const quizRef = await db.collection("quizzes").add(quiz);
 
     return { success: true, quizId: quizRef.id };
-  } catch (error: unknown) { // Changed 'any' to 'unknown' for better type safety
+  } catch (error: unknown) {
+    // Changed 'any' to 'unknown' for better type safety
     console.error("Error generating quiz:", error);
     let errorMessage = "An unexpected error occurred.";
 
     // Safely access error properties
-    if (typeof error === 'object' && error !== null) {
-      if ('message' in error && typeof error.message === 'string') {
+    if (typeof error === "object" && error !== null) {
+      if ("message" in error && typeof error.message === "string") {
         errorMessage = error.message;
       }
       // Check for specific properties like statusCode if the error object structure is known
-      if ('statusCode' in error && typeof error.statusCode === 'number') {
+      if ("statusCode" in error && typeof error.statusCode === "number") {
         if (errorMessage.includes("quota") || error.statusCode === 429) {
           errorMessage = "API quota exceeded. Please try again later.";
         }
       } else if (errorMessage.includes("quota")) {
-         // Fallback for quota errors if statusCode is not available but message indicates it
-         errorMessage = "API quota exceeded. Please try again later.";
+        // Fallback for quota errors if statusCode is not available but message indicates it
+        errorMessage = "API quota exceeded. Please try again later.";
       }
     }
 

@@ -91,9 +91,9 @@ export function GenerateResumeFrom({
             Resume Generated! 🎉
           </h3>
           <p className="text-light-400 text-sm mb-4">
-            Your resume has been created from your interviews, quizzes
-            {githubUsername && ", and GitHub profile"}. 
-            {"\n"}Next, you can optimize it for specific job roles.
+            Your resume has been created from your recent interview performance, 
+            improvement points, and technical assessments.
+            {"\n"}Check the <strong>AI Insights</strong> tab to see your profile analysis!
           </p>
           <div className="flex gap-2 justify-center">
             <Button disabled size="sm">
@@ -113,8 +113,7 @@ export function GenerateResumeFrom({
           Generating your resume...
         </h3>
         <p className="text-light-400 text-sm">
-          We're analyzing your interviews, quizzes, and GitHub to create your
-          resume.
+          We're analyzing your interview performance, technical feedback, and projects to create a data-driven resume.
         </p>
       </div>
     );

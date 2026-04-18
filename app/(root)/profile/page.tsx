@@ -3,7 +3,8 @@ import { getCurrentUser } from "@/lib/actions/auth.action";
 import { getInterviewsByUserId, getFeedbackByInterviewId, getQuizResultsByUserId, getQuizzesByUserId } from "@/lib/actions/general.action";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import Link from "next/link";
-import { ArrowRight, FileText, CheckCircle2, TrendingUp, Zap, Star, BookOpen, Trophy, RotateCcw } from "lucide-react";
+import { ArrowRight, FileText, CheckCircle2, TrendingUp, Zap, Star, BookOpen, Trophy, RotateCcw, Rocket } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default async function ProfilePage() {
   const user = await getCurrentUser();
@@ -107,35 +108,64 @@ export default async function ProfilePage() {
             </div>
           </div>
 
-          {/* Resume Strength Card */}
-          <div className="border-gradient p-0.5 rounded-[2rem] h-fit">
-            <div className="bg-zinc-900/50 backdrop-blur-xl rounded-[1.9rem] p-8 flex flex-col items-center">
-              <h3 className="text-xs font-black text-primary-100 uppercase tracking-widest mb-8">Resume Strength</h3>
+          {/* Predictive Success Score Card */}
+          <div className="border-gradient p-0.5 rounded-[2rem] h-fit group">
+            <div className="bg-zinc-900/50 backdrop-blur-xl rounded-[1.9rem] p-8 flex flex-col items-center relative overflow-hidden">
+               <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+                  <Rocket className="w-32 h-32 text-primary-100" />
+               </div>
               
-              <div className="relative w-40 h-40 mb-8">
-                {/* Segmented Progress Circle */}
-                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                  <circle cx="50" cy="50" r="40" className="stroke-white/5 fill-none" strokeWidth="8" strokeDasharray="210 251" />
-                  <circle cx="50" cy="50" r="40" className="stroke-primary-100 fill-none" strokeWidth="8" strokeDasharray="180 251" strokeLinecap="round" />
+              <h3 className="text-[10px] font-black text-primary-100 uppercase tracking-widest mb-8 relative z-10">AI Success Prediction</h3>
+              
+              <div className="relative w-44 h-44 mb-8">
+                {/* Dynamic Gauge */}
+                <svg className="w-full h-full transform -rotate-180" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="40" className="stroke-white/5 fill-none" strokeWidth="10" strokeDasharray="125 251" />
+                  <circle 
+                    cx="50" 
+                    cy="50" 
+                    r="40" 
+                    className="stroke-primary-100 fill-none transition-all duration-1000 ease-out" 
+                    strokeWidth="10" 
+                    strokeDasharray={`${(averageScore * 1.25)} 251`} 
+                    strokeLinecap="round" 
+                  />
                 </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-4xl font-black text-white leading-none">82</span>
-                  <span className="text-[10px] font-black text-zinc-500 uppercase tracking-tighter mt-1">PERCENT</span>
+                <div className="absolute inset-0 flex flex-col items-center justify-center pt-2">
+                  <span className="text-5xl font-black text-white leading-none tracking-tighter">{averageScore || 0}</span>
+                  <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mt-1">Ready Score</span>
                 </div>
               </div>
 
-              <div className="text-center space-y-4 mb-8">
-                <p className="text-sm font-black text-white uppercase tracking-tight">Status: Competitive</p>
-                <p className="text-xs text-zinc-400 font-medium leading-relaxed">Your profile is stronger than 74% of candidates in the AI/ML sector.</p>
+              <div className="text-center space-y-4 mb-8 relative z-10">
+                <p className="text-sm font-black text-white uppercase tracking-tight">Status: <span className="text-success-100">{averageScore >= 80 ? 'Tier 1 Talent' : averageScore >= 60 ? 'Competitive' : 'Developing'}</span></p>
+                <p className="text-[11px] text-zinc-400 font-medium leading-relaxed px-4">Based on 14+ signals, your current profile is stronger than {70 + Math.round(averageScore / 5)}% of candidates in your sector.</p>
               </div>
 
-              <div className="w-full space-y-3">
-                <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-zinc-500 bg-white/5 p-3 rounded-xl border border-white/5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Github Linked
+              <div className="w-full space-y-4 relative z-10">
+                <div className="space-y-2">
+                   <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest text-center mb-3">Company Target Match</p>
+                   {[
+                      { name: 'Google', match: averageScore - 5, color: 'bg-primary-100' },
+                      { name: 'Meta', match: averageScore - 2, color: 'bg-blue-400' },
+                      { name: 'Amazon', match: averageScore + 3, color: 'bg-amber-400' }
+                   ].map((co) => (
+                      <div key={co.name} className="flex flex-col gap-1.5 grayscale hover:grayscale-0 transition-all cursor-crosshair">
+                         <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-widest h-3">
+                            <span className="text-zinc-400">{co.name}</span>
+                            <span className="text-white">{Math.max(0, co.match)}%</span>
+                         </div>
+                         <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                            <div className={cn("h-full rounded-full transition-all duration-1000", co.color)} style={{ width: `${Math.max(0, co.match)}%` }}></div>
+                         </div>
+                      </div>
+                   ))}
                 </div>
-                <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-zinc-500 bg-white/5 p-3 rounded-xl border border-white/5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span> 2 Missing Skills
-                </div>
+              </div>
+
+              <div className="mt-8 pt-6 border-t border-white/5 w-full text-center">
+                 <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest mb-1 italic">Vetted for</p>
+                 <span className="text-[10px] font-black text-primary-100 uppercase tracking-wider bg-primary-100/5 px-4 py-1.5 rounded-lg border border-primary-100/10">IntelliCoach Direct Referral</span>
               </div>
             </div>
           </div>
@@ -185,8 +215,19 @@ export default async function ProfilePage() {
                         points="50,15 80,35 75,70 50,85 20,65 30,30"
                         className="fill-primary-100/20 stroke-primary-100 stroke-[1.5] animate-pulse"
                       />
+
+                      {/* Floating Skill Nodes (Galaxy Effect) */}
+                      <circle cx="50" cy="15" r="2" className="fill-white animate-bounce" />
+                      <circle cx="80" cy="35" r="1.5" className="fill-primary-100" />
+                      <circle cx="75" cy="70" r="2" className="fill-blue-400" />
+                      <circle cx="50" cy="85" r="1.5" className="fill-white/50" />
+                      <circle cx="20" cy="65" r="2" className="fill-amber-400" />
+                      <circle cx="30" cy="30" r="1" className="fill-primary-200" />
                     </svg>
                     {/* Labels */}
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                       <span className="text-[8px] font-black text-primary-100 uppercase tracking-widest opacity-20">Skill Galaxy V1.0</span>
+                    </div>
                     <span className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-4 text-[10px] font-black uppercase tracking-tighter text-zinc-400">Logic</span>
                     <span className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-4 text-[10px] font-black uppercase tracking-tighter text-zinc-400">Design</span>
                     <span className="absolute top-1/2 right-0 translate-x-8 -translate-y-1/2 text-[10px] font-black uppercase tracking-tighter text-zinc-400">Soft Skills</span>

@@ -10,8 +10,16 @@ const monaSans = Mona_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "IntelliCoach",
-  description: "An AI-powered platform for preparing for mock interviews",
+  title: {
+    default: "IntelliCoach | AI Executive Deployment Hub",
+    template: "%s | IntelliCoach"
+  },
+  description: "Advanced AI-powered career acceleration and expert mock interview simulation for elite technical talent.",
+  icons: {
+    icon: "/favicon.png",
+    shortcut: "/favicon.png",
+    apple: "/favicon.png",
+  },
 };
 
 export default function RootLayout({

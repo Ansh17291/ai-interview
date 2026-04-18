@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Calendar, Clock, Award, Briefcase, ChevronRight, Play } from "lucide-react";
+import { Calendar, Clock, Award, Briefcase, ChevronRight, Play, MessageSquare } from "lucide-react";
 
 import Agent from "@/components/Agent";
 import { getRandomInterviewCover } from "@/lib/utils";
@@ -13,6 +13,7 @@ import {
 } from "@/lib/actions/general.action";
 import { getCurrentUser } from "@/lib/actions/auth.action";
 import DisplayTechIcons from "@/components/DisplayTechIcons";
+import { Transcript } from "@/components/interview/Transcript";
 
 const InterviewDetails = async ({ 
   params,
@@ -167,6 +168,18 @@ const InterviewDetails = async ({
               ))}
             </ul>
           </div>
+          
+          {(feedback?.transcript || interview?.transcript) && (
+            <div className="flex flex-col gap-6">
+              <h3 className="text-2xl font-black text-white flex items-center gap-3 uppercase tracking-tight">
+                <MessageSquare className="w-6 h-6 text-primary-100" /> Interaction Transcript
+              </h3>
+              <Transcript 
+                transcript={(feedback?.transcript || interview?.transcript) as any} 
+                height="500px"
+              />
+            </div>
+          )}
         </div>
 
         {/* Sidebar Info & Action */}

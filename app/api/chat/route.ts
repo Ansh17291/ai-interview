@@ -70,7 +70,7 @@ export async function POST(req: Request) {
     }
 
     const result = await generateText({
-      model: google("gemini-2.0-flash"),
+      model: google("gemini-1.5-flash"),
       system:
         "You are an AI Interview Coach. Help users with their doubts about interviews, tech stacks, and career advice. Be concise, encouraging, and professional.",
       messages: messages.map((msg: any) => ({

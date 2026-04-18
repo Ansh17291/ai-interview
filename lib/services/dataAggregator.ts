@@ -16,10 +16,25 @@ async function fetchInterviewData(userId: string) {
       .limit(5)
       .get();
 
-    return interviews.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    const interviewData = [];
+
+    for (const doc of interviews.docs) {
+      const data = doc.data();
+      // Fetch feedback for this interview
+      const feedback = await db
+        .collection("feedback")
+        .where("interviewId", "==", doc.id)
+        .limit(1)
+        .get();
+
+      interviewData.push({
+        id: doc.id,
+        ...data,
+        feedback: !feedback.empty ? feedback.docs[0].data() : null,
+      });
+    }
+
+    return interviewData;
   } catch (error) {
     console.error("Error fetching interviews:", error);
     return [];
@@ -169,6 +184,8 @@ export async function generateResumeFromUserData(
         techstack: (i as any).techstack,
         score: (i as any).score,
         date: (i as any).createdAt,
+        strengths: (i as any).feedback?.strengths || [],
+        areasForImprovement: (i as any).feedback?.areasForImprovement || [],
       })),
       quizzes: quizzes.map((q) => ({
         title: (q as any).title,
@@ -190,7 +207,7 @@ export async function generateResumeFromUserData(
     const genAI = new GoogleGenerativeAI(
       process.env.GOOGLE_GENERATIVE_AI_API_KEY
     );
-    const model = genAI.getGenerativeModel({ model: "gemini-2-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const prompt = `
 Based on this user data, generate a professional resume JSON structure:
@@ -236,7 +253,13 @@ Create a resume JSON with this structure (exactly as shown):
     }
   ],
   "skills": ["array of technical skills from GitHub, quizzes, and interviews"],
-  "certifications": []
+  "certifications": [],
+  "insights": {
+    "score": number,
+    "strengths": ["compiled from interview feedback"],
+    "improvements": ["compiled from areas for improvement in interviews"],
+    "marketRelevance": "short paragraph"
+  }
 }
 
 Guidelines:

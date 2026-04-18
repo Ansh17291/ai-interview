@@ -25,7 +25,7 @@ export async function optimizeResumeForRole(
     const genAI = new GoogleGenerativeAI(
       process.env.GOOGLE_GENERATIVE_AI_API_KEY || ""
     );
-    const model = genAI.getGenerativeModel({ model: "gemini-2-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const prompt = `
       You are an expert ATS (Applicant Tracking System) optimizer and professional career coach.
@@ -144,7 +144,7 @@ export async function analyzeResumeAgainstJD(
     const genAI = new GoogleGenerativeAI(
       process.env.GOOGLE_GENERATIVE_AI_API_KEY || ""
     );
-    const model = genAI.getGenerativeModel({ model: "gemini-2-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const prompt = `
        Analyze this resume against the job description.

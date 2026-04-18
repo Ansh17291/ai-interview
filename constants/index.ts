@@ -197,6 +197,18 @@ export const feedbackSchema = z.object({
   ]),
   technicalDepth: z.number().min(0).max(100),
   behavioralTraits: z.array(z.string()),
+  // New Intelligence Metrics
+  emotionalIntelligence: z.number().min(0).max(100),
+  stressManagement: z.number().min(0).max(100),
+  learningAgility: z.number().min(0).max(100),
+  fillerWords: z.object({
+    um: z.number().default(0),
+    uh: z.number().default(0),
+    like: z.number().default(0),
+    total: z.number().default(0),
+  }),
+  speakingPace: z.enum(["Slow", "Moderate", "Fast", "Irregular"]),
+  sentimentTrend: z.array(z.number().min(0).max(100)), // Array of 5-10 scores showing progression
 });
 
 export const quizSchema = z.object({

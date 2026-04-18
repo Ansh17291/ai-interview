@@ -2,6 +2,8 @@
 
 import { db } from "@/firebase/admin";
 import { revalidatePath } from "next/cache";
+import { generateResumeInsights } from "@/lib/services/resumeParser";
+import { Resume, ResumeEducation, ResumeExperience, CareerPath, UserLearningProgress } from "@/types";
 
 // --- RESUME OPERATIONS ---
 export async function createResume(data: {
@@ -15,8 +17,12 @@ export async function createResume(data: {
   certifications: string[];
 }) {
   try {
+    const resumeText = `${data.title}\n\nSummary:\n${data.summary}\n\nExperience:\n${data.experience.map(e => `${e.position} at ${e.companyName}\n${e.description}`).join("\n")}\n\nSkills:\n${data.skills.join(", ")}`;
+    const insightsResult = await generateResumeInsights(resumeText);
+    
     const newResume = {
       ...data,
+      insights: insightsResult.success ? insightsResult.insights : undefined,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -31,11 +37,20 @@ export async function createResume(data: {
 
 export async function updateResume(resumeId: string, data: Partial<Resume>) {
   try {
+    const resumeDoc = await db.collection("resumes").doc(resumeId).get();
+    const currentData = resumeDoc.data();
+    
+    // Generate new insights if relevant fields changed
+    const resumeText = `${data.title || currentData?.title}\n\nSummary:\n${data.summary || currentData?.summary}\n\nExperience:\n${(data.experience || currentData?.experience || []).map((e: any) => `${e.position} at ${e.companyName}\n${e.description}`).join("\n")}\n\nSkills:\n${(data.skills || currentData?.skills || []).join(", ")}`;
+    
+    const insightsResult = await generateResumeInsights(resumeText);
+
     await db
       .collection("resumes")
       .doc(resumeId)
       .update({
         ...data,
+        insights: insightsResult.success ? insightsResult.insights : currentData?.insights,
         updatedAt: new Date().toISOString(),
       });
     revalidatePath("/resume");
