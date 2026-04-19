@@ -22,7 +22,7 @@ export async function setSessionCookie(idToken: string) {
     maxAge: SESSION_DURATION,
     expires: new Date(Date.now() + SESSION_DURATION * 1000),
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production", // Use secure flag only in production
+    secure:false,
     path: "/",
     sameSite: "lax",
   });
